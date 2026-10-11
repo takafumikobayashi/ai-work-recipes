@@ -4,8 +4,8 @@
   label: 会議
 - id: writing
   label: 文章作成
-- id: summary
-  label: 要約
+- id: reading
+  label: 読み解く
 - id: research
   label: 調査
 - id: planning

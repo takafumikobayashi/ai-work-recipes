@@ -2,7 +2,7 @@
 id: short-name
 title: [Recipe名]
 summary: [何を貼ると、何ができるかを一文で。カードと一覧に表示する]
-category: [meeting / writing / summary / research / planning / excel / email]
+category: [recipes/categories.yml の id から選ぶ]
 status: Draft
 version: 0.1.0
 audience: [beginner, constrained-environment]

@@ -22,6 +22,7 @@ recipes/
 | カテゴリ | Recipe | 状態 |
 |---|---|---|
 | meeting | [文字起こしから議事録を作る](meeting/minutes-from-transcript/) | Draft |
+| reading | [ガイドラインから、やるべきことを整理する](reading/guideline-to-actions/) | Draft |
 
 ## 状態
 

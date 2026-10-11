@@ -15,7 +15,7 @@
 
 ```text
 recipes/
-  meeting/                         # 業務カテゴリ
+  meeting/                         # 業務カテゴリ（例：meeting、reading）
     minutes-from-transcript/       # Recipe（フォルダ名がサイトのURLになる）
       page.md                      # 利用者向け：サイト表示の素材（カード・使い方・注意・最後の確認）
       prompts/
