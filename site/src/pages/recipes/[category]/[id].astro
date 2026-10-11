@@ -1,0 +1,78 @@
+---
+import Base from '../../../layouts/Base.astro';
+import Stars from '../../../components/Stars.astro';
+import { getRecipes, type Recipe } from '../../../lib/content';
+import { eyebrow, timeParts, modelStatus, hasOptionalStep, githubUrl, recipeSections } from '../../../lib/recipe-view';
+
+export function getStaticPaths() {
+  return getRecipes().map((recipe) => ({ params: { category: recipe.category, id: recipe.id }, props: { recipe } }));
+}
+
+interface Props { recipe: Recipe }
+const { recipe: r } = Astro.props;
+const d = r.data;
+const time = timeParts(r);
+const model = modelStatus(r);
+const sec = recipeSections(r);
+const ai = d.ai_knowledge === '不要' ? 'AIの知識は不要' : `AIの知識：${d.ai_knowledge}`;
+---
+<Base title={d.title} description={d.summary} category={r.category}>
+  <p class="eyebrow">{eyebrow(r)}</p>
+  <h1>{d.title}</h1>
+  <p class="summary">{d.summary}</p>
+
+  <dl class="spec">
+    <div><dt>TIME</dt><dd>{time.main}{time.sub && <span class="sub">{time.sub}</span>}</dd></div>
+    <div><dt>LEVEL</dt><dd><Stars level={d.difficulty} /><span class="sub">{ai}</span></dd></div>
+    <div><dt>STEPS</dt><dd>{d.user_steps}ステップ{hasOptionalStep(r) && <span class="sub">質問がなければ{d.user_steps - 1}</span>}</dd></div>
+    <div><dt>MIN. MODEL</dt><dd>{d.minimum_model}<span class="sub">{model.verified ? `確認済み（${d.last_tested}）` : d.minimum_model_status}</span></dd></div>
+  </dl>
+  {d.materials?.length > 0 && <p class="material">用意するもの：{d.materials.join('、')}</p>}
+  {sec.caution && (
+    <div class="caution"><strong>使う前に</strong><Fragment set:html={sec.caution} /></div>
+  )}
+
+  <h2 id="使い方">使い方</h2>
+  <ol class="steps">
+    {sec.steps.map((s) => (
+      <li class:list={['step', { optional: s.optional }]}>
+        <div class="num" aria-hidden="true">{String(s.num).padStart(2, '0')}</div>
+        <div class="step-body">
+          <span class="step-tag">STEP {s.num}{s.optional && ' · 必要なときだけ'}</span>
+          <h3>{s.title}</h3>
+          <Fragment set:html={s.html} />
+        </div>
+      </li>
+    ))}
+  </ol>
+
+  {sec.tooLong && (
+    <details class="box" id="長すぎて送れないとき">
+      <summary>長すぎて送れないとき</summary>
+      <div class="box-body prose"><Fragment set:html={sec.tooLong} /></div>
+    </details>
+  )}
+
+  {sec.others.map((o) => (
+    <section class="prose"><h2>{o.title}</h2><Fragment set:html={o.html} /></section>
+  ))}
+
+  {sec.checklist && (
+    <section>
+      <h2 id="最後に確認すること">最後に確認すること</h2>
+      <Fragment set:html={sec.checklist} />
+    </section>
+  )}
+
+  {sec.why && (
+    <details class="box">
+      <summary>なぜこのプロンプトでうまくいくの？</summary>
+      <div class="box-body prose"><Fragment set:html={sec.why} /></div>
+    </details>
+  )}
+
+  <p class="foot">
+    <span class="mono">v{d.version} · {d.status}</span>
+    <span>技術者の方へ：<a href={githubUrl(r)} target="_blank" rel="noopener">設計・評価・改訂履歴を見る（GitHub）</a></span>
+  </p>
+</Base>

@@ -39,7 +39,7 @@ README.md
 docs/
   concept.md             # プロジェクトの目的と対象
   design-principles.md   # Recipeを設計・レビューする原則
-  prompt-patterns.md     # プロンプト設計パターン（P1〜P9）
+  prompt-patterns.md     # プロンプト設計パターン（P1〜P10）
   distribution.md        # Webサイト・GitHub・noteでの公開方針
   site-design.md         # Webサイトの見せ方の基準
   mock/site-mock.html    # Webサイトのモック
@@ -56,6 +56,10 @@ recipes/
       page.md                    # サイト表示の素材（利用者向け）
       prompts/                   # コピー用プロンプト（利用者向け）
       README.md                  # 設計と検証（技術者・改善したい人向け）
+      evals/                     # テストセットと評価結果
+  reading/
+    guideline-to-actions/        # ガイドラインから、やるべきことを整理する
+site/                            # Webサイト（Astro）。recipes/ と guides/ から生成する
 ```
 
 ## 公開方針

@@ -50,7 +50,7 @@ STEP 1で抽出・判定・整理を順に行い、その整理結果（中間�
 - 各Recipeに標準例・失敗例・曖昧な例を用意する
 - 複数のモデルまたは異なる環境で差分を記録する
 - 利用者が迷った箇所を文書とプロンプトへ反映する
-- Webサイトの技術選定を行う（Cloudflareを第一候補、Vercelと比較）
+- Webサイトを実装する（Astro + Cloudflare Pages。`site/` に実装済み。公開前はプレビューURLをCloudflare Accessで制限する）
 - `ai-work-recipes.tariki-code.tokyo` などのサブドメインで「AI業務レシピ β」として公開する
 - noteで問題提起の記事を書き、サイトとGitHubへ誘導する
 

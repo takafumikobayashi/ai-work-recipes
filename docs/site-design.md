@@ -1,6 +1,6 @@
 # サイトデザイン
 
-Webサイト（利用者向け）の見せ方の基準。モック [mock/site-mock.html](mock/site-mock.html) で確認した内容をまとめる。モックのプロンプトは作成時点の写しであり、正本は各Recipeの `prompts/` にある。
+Webサイト（利用者向け）の見せ方の基準。モック [mock/site-mock.html](mock/site-mock.html) で確認した内容をまとめる。実装は [../site/](../site/) にある。モックのプロンプトは作成時点の写しであり、正本は各Recipeの `prompts/` にある。
 
 ## 方針
 
@@ -71,4 +71,4 @@ Webサイト（利用者向け）の見せ方の基準。モック [mock/site-mo
 | ラベル・プロンプト（英数字） | IBM Plex Mono |
 | プロンプト（日本語） | BIZ UDGothic |
 
-モックではGoogle Fontsから読み込んでいるが、本番では外部に頼らないため（[distribution.md](distribution.md) の「利用者のネットワーク環境」）、フォントファイルをサイトに含めて配信する。いずれもオープンなライセンス（SIL Open Font License）で配布されている。
+モックではGoogle Fontsから読み込んでいるが、実装では外部に頼らないため（[distribution.md](distribution.md) の「利用者のネットワーク環境」）、フォントファイルをサイトに含めて配信する（`@fontsource` のパッケージを使い、文字種ごとに分割されたファイルを必要な分だけ読み込む）。いずれもオープンなライセンス（SIL Open Font License）で配布されている。

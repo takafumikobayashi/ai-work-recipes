@@ -1,0 +1,21 @@
+---
+import type { Recipe } from '../lib/content';
+import { eyebrow, timeParts, modelStatus } from '../lib/recipe-view';
+import Stars from './Stars.astro';
+
+interface Props { recipe: Recipe }
+const { recipe: r } = Astro.props;
+const time = timeParts(r);
+const model = modelStatus(r);
+---
+<a class="card" href={r.url}>
+  <span class="cat">{eyebrow(r)}</span>
+  <h3>{r.data.title}</h3>
+  <p>{r.data.summary}</p>
+  <ul class="meta">
+    <li><span aria-hidden="true">⏱</span> {time.main}</li>
+    <li><Stars level={r.data.difficulty} /></li>
+    <li>操作 {r.data.user_steps}ステップ</li>
+    <li><span class:list={['status', model.verified ? 'verified' : 'check']}>{model.label}</span></li>
+  </ul>
+</a>

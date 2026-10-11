@@ -1,0 +1,5 @@
+---
+interface Props { level: number; max?: number }
+const { level, max = 3 } = Astro.props;
+---
+<span class="stars" role="img" aria-label={`難易度 ${level} / ${max}`}>{'★'.repeat(level)}<span class="off">{'★'.repeat(Math.max(0, max - level))}</span></span>
