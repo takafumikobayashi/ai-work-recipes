@@ -41,11 +41,15 @@ docs/
   design-principles.md   # Recipeを設計・レビューする原則
   prompt-patterns.md     # プロンプト設計パターン（P1〜P9）
   distribution.md        # Webサイト・GitHub・noteでの公開方針
+  site-design.md         # Webサイトの見せ方の基準
+  mock/site-mock.html    # Webサイトのモック
   evaluation.md          # 評価項目とテスト方針
   recipe-spec.md         # Recipe共通仕様
   roadmap.md             # 段階的な実装・公開計画
+guides/                          # サイト共通ページの素材（利用者向け）
 recipes/
   README.md                      # Recipeの構成と作り方
+  categories.yml                 # 業務カテゴリの一覧
   template/                      # 新しいRecipeのテンプレート（ディレクトリごと複製）
   meeting/                       # 業務カテゴリ
     minutes-from-transcript/     # 最初のRecipe（議事録）
