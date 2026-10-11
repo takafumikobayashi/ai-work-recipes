@@ -1,16 +1,27 @@
 # Recipes
 
-このディレクトリには、特定の仕事を終わらせるための実践的な手順を置きます。
+このディレクトリには、Recipeの正本を置きます。Recipeを**使う人はWebサイト**を見ます。このディレクトリは、Recipeを作る・検証する・改善する人のためのものです。
 
-## 読み方
+## 構成
 
-各Recipeは、次の順で読むと使いやすくなっています。
+```text
+recipes/
+  <category>/              # 業務カテゴリ（meeting, writing, summary など）
+    <name>/                # Recipe。フォルダの場所がサイトのURLになる
+      page.md              # サイト表示の素材：カード情報（フロントマター）、使い方、注意、最後の確認
+      prompts/             # コピー用プロンプト（本文のみ）
+      README.md            # 設計と検証：なぜこの形か、限界、評価、改訂履歴
+      evals/               # テストセットと評価記録
+  template/                # 新しいRecipeのテンプレート
+```
 
-1. 目的と対象を確認する
-2. 入力してよい情報・いけない情報を確認する
-3. 手順を上から順に試す
-4. 人間の確認点で止まり、出力を元資料と照合する
-5. 評価結果と限界を確認してから実務に使う
+詳しい仕様は [docs/recipe-spec.md](../docs/recipe-spec.md) を参照してください。
+
+## Recipe一覧
+
+| カテゴリ | Recipe | 状態 |
+|---|---|---|
+| meeting | [文字起こしから議事録を作る](meeting/minutes-from-transcript/) | Draft |
 
 ## 状態
 
@@ -23,8 +34,11 @@
 
 ## 新しいRecipeを作る
 
-1. [template.md](template.md) を複製する
-2. [docs/recipe-spec.md](../docs/recipe-spec.md) の必須項目を埋める
-3. 小さなテストセットで確認する
-4. 結果・制約・改訂履歴を記録する
-5. レビュー後に状態を更新する
+1. [template/](template/) を `recipes/<category>/<name>/` にディレクトリごと複製する
+2. `README.md` で、仕事の分解・判断基準・中間フォーマットを先に設計する
+3. [docs/prompt-patterns.md](../docs/prompt-patterns.md) のパターンに沿ってプロンプトを書き、`prompts/` に置く
+4. `page.md` に、利用者向けの使い方を短く書く（です・ます調）
+5. 小さなテストセットで確認し、結果・制約・改訂履歴を `README.md` に記録する
+6. レビュー後に状態を更新する
+
+改善の提案や、うまくいかなかった事例の報告は、IssueやPull Requestで受け付けます。
