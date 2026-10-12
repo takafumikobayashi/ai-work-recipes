@@ -26,7 +26,7 @@ npm run build     # dist/ に出力
 npm run preview   # 出力したサイトを確認
 ```
 
-`npm run dev` は `site/` の外の素材の変更を自動では反映しない。`page.md` やプロンプトを直したときは、ページを再読み込みするか、開発サーバーを起動し直す。
+`npm run dev` の間は、`recipes/` と `guides/` の素材（`page.md`、`prompts/*.txt`、`categories.yml` など）を保存すると、ブラウザが自動で再読み込みされ、変更と形式のチェックがすぐ反映される。素材は開発時には毎回読み直し、`npm run build` のときだけ1回読んで使い回す（`src/lib/content.ts` の `USE_CACHE`）。
 
 ビルドは素材の形式もチェックし、次の場合は失敗する（`src/lib/content.ts` の `getCategories`・`getRecipes`・`validateRecipe`・`validateGuide`、`src/lib/recipe-view.ts` の `recipeSections`）。
 

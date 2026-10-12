@@ -1,13 +1,14 @@
 ---
 import Base from '../../layouts/Base.astro';
-import { getGuides, lex, renderTokens, type Guide } from '../../lib/content';
+import { getGuides, lex, renderTokens } from '../../lib/content';
 
 export function getStaticPaths() {
-  return getGuides().map((guide) => ({ params: { id: guide.id }, props: { guide } }));
+  return getGuides().map((guide) => ({ params: { id: guide.id } }));
 }
 
-interface Props { guide: Guide }
-const { guide } = Astro.props;
+// 表示のたびに読み直す（理由は recipes/[category]/[id].astro と同じ）
+const guide = getGuides().find((g) => g.id === Astro.params.id);
+if (!guide) return Astro.redirect('/404/');
 const tokens = lex(guide.body).filter((t) => t.type !== 'space');
 // 最初の段落はリード文として表示する
 const lead = tokens[0]?.type === 'paragraph' ? tokens.shift()! : undefined;

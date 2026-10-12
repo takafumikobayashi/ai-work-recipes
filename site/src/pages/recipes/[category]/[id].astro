@@ -1,15 +1,18 @@
 ---
 import Base from '../../../layouts/Base.astro';
 import Stars from '../../../components/Stars.astro';
-import { getRecipes, type Recipe } from '../../../lib/content';
+import { getRecipes } from '../../../lib/content';
 import { eyebrow, timeParts, modelStatus, githubUrl, recipeSections } from '../../../lib/recipe-view';
 
 export function getStaticPaths() {
-  return getRecipes().map((recipe) => ({ params: { category: recipe.category, id: recipe.id }, props: { recipe } }));
+  return getRecipes().map((recipe) => ({ params: { category: recipe.category, id: recipe.id } }));
 }
 
-interface Props { recipe: Recipe }
-const { recipe: r } = Astro.props;
+// レシピは props で受け取らず、表示のたびに読み直す。
+// 開発サーバーは getStaticPaths の結果を使い回すため、props で渡すと素材を編集しても古い内容が出る
+const { category, id } = Astro.params;
+const r = getRecipes().find((x) => x.category === category && x.id === id);
+if (!r) return Astro.redirect('/404/');
 const d = r.data;
 const time = timeParts(r);
 const model = modelStatus(r);

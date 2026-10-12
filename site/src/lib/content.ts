@@ -10,6 +10,10 @@ const ROOT = path.resolve(process.cwd(), '..');
 const RECIPES_DIR = path.join(ROOT, 'recipes');
 const GUIDES_DIR = path.join(ROOT, 'guides');
 
+// 素材は fs で直接読むため、Vite の変更検知の対象にならない。
+// ビルドでは1回だけ読めばよいのでキャッシュし、開発サーバー（npm run dev）では毎回読み直して編集をすぐ反映する
+const USE_CACHE = !import.meta.env.DEV;
+
 export interface Category {
   id: string;
   label: string;
@@ -118,7 +122,7 @@ function subdirs(dir: string): string[] {
 
 let categoriesCache: Category[] | undefined;
 export function getCategories(): Category[] {
-  if (categoriesCache) return categoriesCache;
+  if (USE_CACHE && categoriesCache) return categoriesCache;
   const file = path.join(RECIPES_DIR, 'categories.yml');
   const cats = load(fs.readFileSync(file, 'utf8'));
   if (!Array.isArray(cats)) fail(file, 'カテゴリのリストになっていません');
@@ -140,7 +144,7 @@ export function getCategories(): Category[] {
 
 let recipesCache: Recipe[] | undefined;
 export function getRecipes(): Recipe[] {
-  if (recipesCache) return recipesCache;
+  if (USE_CACHE && recipesCache) return recipesCache;
   const cats = getCategories();
   const list: Recipe[] = [];
   for (const cat of cats) {
@@ -193,7 +197,7 @@ function validateGuide(file: string, name: string, data: Record<string, any>) {
 
 let guidesCache: Guide[] | undefined;
 export function getGuides(): Guide[] {
-  if (guidesCache) return guidesCache;
+  if (USE_CACHE && guidesCache) return guidesCache;
   guidesCache = fs.readdirSync(GUIDES_DIR)
     .filter((f) => f.endsWith('.md') && f !== 'README.md')
     .map((f) => {
