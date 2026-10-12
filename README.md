@@ -59,6 +59,7 @@ recipes/
       evals/                     # テストセットと評価結果
   reading/
     guideline-to-actions/        # ガイドラインから、やるべきことを整理する
+    terms-to-checkpoints/        # 利用規約・約款から、確認すべき条項を整理する
   writing/
     notice-from-memo/            # メモからお知らせ文を作る
   organize/
