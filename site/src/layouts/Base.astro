@@ -1,0 +1,63 @@
+---
+import '@fontsource/ibm-plex-sans-jp/400.css';
+import '@fontsource/ibm-plex-sans-jp/500.css';
+import '@fontsource/ibm-plex-sans-jp/700.css';
+import '@fontsource/ibm-plex-mono/400.css';
+import '@fontsource/ibm-plex-mono/500.css';
+import '@fontsource/biz-udgothic/400.css';
+import '../styles/site.css';
+import Nav from '../components/Nav.astro';
+import { SITE } from '../site.config';
+
+interface Props {
+  title?: string;
+  description?: string;
+  category?: string;
+}
+const { title, description = SITE.description, category } = Astro.props;
+const current = Astro.url.pathname;
+const pageTitle = title ? `${title} | ${SITE.name}` : `${SITE.name} β`;
+---
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>{pageTitle}</title>
+  <meta name="description" content={description}>
+  {SITE.noindex && <meta name="robots" content="noindex">}
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <script is:inline>
+    // 描画前にPCのメニュー開閉状態を反映して、ちらつきを防ぐ
+    try {
+      if (!matchMedia('(max-width: 899px)').matches && localStorage.getItem('nav') === 'closed') {
+        document.documentElement.classList.add('nav-closed');
+      }
+    } catch (e) {}
+  </script>
+</head>
+<body>
+  <a class="skip" href="#main">本文へ移動</a>
+  <header class="top">
+    <button class="icon-btn" id="nav-toggle" type="button" aria-label="メニューを開閉" aria-controls="nav" aria-expanded="true">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+    <a class="brand" href="/"><span class="mark" aria-hidden="true"></span><span>{SITE.name}</span><span class="beta">BETA</span></a>
+    <span class="spacer"></span>
+  </header>
+
+  <div class="shell">
+    <Nav current={current} category={category} />
+    <div class="scrim" id="scrim"></div>
+    <main class="main" id="main">
+      <div class="col">
+        <slot />
+      </div>
+    </main>
+  </div>
+
+  <script>
+    import '../scripts/site';
+  </script>
+</body>
+</html>

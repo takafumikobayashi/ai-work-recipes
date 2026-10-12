@@ -1,0 +1,83 @@
+---
+import { getCategories, getRecipes, getGuides, categoryLabel, headingId } from '../lib/content';
+import { SITE } from '../site.config';
+
+interface Props {
+  current: string; // 表示中のページのURL
+  category?: string; // 表示中のレシピのカテゴリ
+}
+const { current, category } = Astro.props;
+
+const recipes = getRecipes();
+const guides = getGuides();
+const cats = getCategories()
+  .map((c) => ({ ...c, recipes: recipes.filter((r) => r.category === c.id) }))
+  .filter((c) => c.recipes.length > 0);
+const start = guides.find((g) => g.id === 'start');
+const help = guides.filter((g) => g.data.nav_group === 'help');
+const about = guides.filter((g) => g.data.nav_group === 'about');
+const anchor = (g: typeof start, heading: string) => (g ? `${g.url}#${encodeURIComponent(headingId(heading))}` : undefined);
+const cur = (url: string) => (url === current ? { 'aria-current': 'page' as const } : {});
+// メニューは全ページ共通なので、カテゴリが違えば同じ名前のレシピがあっても重ならないIDにする
+const copyId = (r: (typeof recipes)[number], p: (typeof recipes)[number]['prompts'][number]) => `q-${r.category}-${r.id}-${p.name}`;
+const searchText = (r: (typeof recipes)[number]) =>
+  [r.data.title, r.data.summary, categoryLabel(r.category), ...(r.data.input_types ?? []), ...(r.data.output_types ?? [])].join(' ');
+---
+<nav class="nav" id="nav" aria-label="サイトメニュー">
+  <div class="search">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+    <input type="search" id="q" placeholder="レシピを探す（例：議事録）" aria-label="レシピを探す" autocomplete="off">
+  </div>
+
+  <ul>
+    {start && <li><a class="nav-link" href={start.url} {...cur(start.url)}>{start.data.title}</a></li>}
+    <li><a class="nav-link" href="/" {...cur('/')}>すべてのレシピ</a></li>
+  </ul>
+
+  <p class="nav-label">業務から探す</p>
+  <ul>
+    {cats.map((c) => (
+      <li class="nav-cat" data-open={String(!category || category === c.id)}>
+        <button class="nav-link" type="button" data-toggle-cat>
+          <span>{c.label}</span>
+          <span style="display:flex;gap:8px;align-items:center"><span class="count">{c.recipes.length}</span><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span>
+        </button>
+        <ul>
+          {c.recipes.map((r) => (
+            <li data-title={searchText(r)}>
+              <a class="nav-link" href={r.url} {...cur(r.url)}>{r.data.title}</a>
+              {r.prompts.length > 0 && (
+                <div class="quick" role="group" aria-label={`${r.data.title}のプロンプトをすぐコピー`}>
+                  {r.prompts.map((p) => (
+                    <button class="qcopy" type="button" data-copy={copyId(r, p)} data-fallback={`${r.url}#${p.name}`}>
+                      <span>STEP {p.step} をコピー</span><span class="k">{p.chars.toLocaleString('ja-JP')}字</span>
+                    </button>
+                  ))}
+                  {r.prompts.map((p) => <pre hidden id={copyId(r, p)}>{p.text}</pre>)}
+                </div>
+              )}
+            </li>
+          ))}
+        </ul>
+      </li>
+    ))}
+  </ul>
+
+  <p class="nav-label">困ったとき</p>
+  <ul>
+    {help.map((g) => <li><a class="nav-link" href={g.url} {...cur(g.url)}>{g.data.title}</a></li>)}
+    {start && <li><a class="nav-link" href={anchor(start, '入力してはいけない情報')}>入力してはいけない情報</a></li>}
+  </ul>
+
+  <p class="nav-label">このサイトについて</p>
+  <ul>
+    {start && <li><a class="nav-link" href={anchor(start, '最低動作モデルとは')}>最低動作モデルとは</a></li>}
+    {about.map((g) => <li><a class="nav-link" href={g.url} {...cur(g.url)}>{g.data.title}</a></li>)}
+    <li>
+      {SITE.feedbackUrl
+        ? <a class="nav-link" href={SITE.feedbackUrl} target="_blank" rel="noopener">ご意見フォーム<span aria-hidden="true">↗</span></a>
+        : <span class="nav-soon"><span>ご意見フォーム</span><span>準備中</span></span>}
+    </li>
+    <li><a class="nav-link" href={SITE.github} target="_blank" rel="noopener">技術者の方へ（GitHub）<span aria-hidden="true">↗</span></a></li>
+  </ul>
+</nav>

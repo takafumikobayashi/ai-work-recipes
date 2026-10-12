@@ -1,0 +1,950 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AI業務レシピ β モック</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDGothic&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+JP:wght@400;500;700&display=swap">
+<style>
+/* Layout: app shell — collapsible left nav (drawer on phones) + one reading column; prompts sit in dark instrument-like panels */
+:root {
+  --bg: #f2f4f8;
+  --grid: rgba(39, 71, 245, .05);
+  --surface: #ffffff;
+  --surface-2: #eceff5;
+  --ink: #0f1726;
+  --muted: #5a6478;
+  --line: #dbe0ea;
+  --accent: #2747f5;
+  --accent-ink: #ffffff;
+  --accent-soft: #e6eafe;
+  --ok: #0a8a68;
+  --ok-soft: #e3f4ee;
+  --note-bg: #eef1f6;
+  --note-line: #c9d1df;
+  --panel-bg: #f8fafd;
+  --panel-head: #eef1f7;
+  --panel-fg: #1b2436;
+  --panel-muted: #66718a;
+  --panel-line: #d5dce8;
+  --src: #7a3fd0;
+  --src-soft: #f1e9fd;
+  --scrim: rgba(15, 23, 38, .45);
+  --f-body: "IBM Plex Sans JP", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", sans-serif;
+  --f-mono: "IBM Plex Mono", "BIZ UDGothic", "Osaka-Mono", "MS Gothic", monospace;
+  --nav-w: 288px;
+  --top-h: 56px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0a0e16; --grid: rgba(123, 147, 255, .05); --surface: #111827; --surface-2: #172036;
+    --ink: #e5eaf3; --muted: #8f9ab0; --line: #243049;
+    --accent: #7d95ff; --accent-ink: #0a0e16; --accent-soft: #1a2452;
+    --ok: #3fcca3; --ok-soft: #12332a; --note-bg: #151d2e; --note-line: #2c3a56;
+    --panel-bg: #060910; --panel-head: #0e1422; --panel-fg: #dce3f0; --panel-muted: #7f8aa3; --panel-line: #1d273c;
+    --src: #c3a6f5; --src-soft: #2a2042; --scrim: rgba(0, 0, 0, .6);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0a0e16; --grid: rgba(123, 147, 255, .05); --surface: #111827; --surface-2: #172036;
+  --ink: #e5eaf3; --muted: #8f9ab0; --line: #243049;
+  --accent: #7d95ff; --accent-ink: #0a0e16; --accent-soft: #1a2452;
+  --ok: #3fcca3; --ok-soft: #12332a; --note-bg: #151d2e; --note-line: #2c3a56;
+  --panel-bg: #060910; --panel-head: #0e1422; --panel-fg: #dce3f0; --panel-muted: #7f8aa3; --panel-line: #1d273c;
+  --src: #c3a6f5; --src-soft: #2a2042; --scrim: rgba(0, 0, 0, .6);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { min-height: 100%; }
+body {
+  background-color: var(--bg);
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 32px 32px;
+  color: var(--ink);
+  font-family: var(--f-body); font-size: 16px; line-height: 1.85;
+}
+a { color: var(--accent); }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.mono { font-family: var(--f-mono); }
+
+/* top bar */
+.top {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 30;
+  height: var(--top-h); display: flex; align-items: center; gap: 12px;
+  padding: 0 16px; background: var(--surface); border-bottom: 1px solid var(--line);
+}
+.icon-btn {
+  width: 40px; height: 40px; display: grid; place-items: center; flex: none;
+  border: 1px solid var(--line); border-radius: 8px; background: var(--surface); cursor: pointer;
+}
+.icon-btn svg { width: 18px; height: 18px; stroke: var(--ink); fill: none; stroke-width: 2; stroke-linecap: round; }
+.brand { display: flex; align-items: center; gap: 8px; text-decoration: none; color: var(--ink); font-weight: 700; font-size: 17px; letter-spacing: .02em; min-width: 0; }
+.brand .mark { width: 22px; height: 22px; border-radius: 6px; background: var(--accent); position: relative; flex: none; }
+.brand .mark::after { content: ""; position: absolute; inset: 6px 5px 6px 5px; border-top: 2px solid var(--accent-ink); border-bottom: 2px solid var(--accent-ink); }
+.beta { font-family: var(--f-mono); font-size: 11px; font-weight: 500; color: var(--accent); background: var(--accent-soft); border-radius: 4px; padding: 1px 6px; }
+.top .spacer { flex: 1; }
+.srcswitch { display: inline-flex; gap: 6px; align-items: center; font-size: 12px; color: var(--src); background: var(--src-soft); border-radius: 999px; padding: 4px 12px; cursor: pointer; white-space: nowrap; }
+.srcswitch input { accent-color: var(--src); }
+
+/* shell */
+.shell { display: grid; grid-template-columns: var(--nav-w) minmax(0, 1fr); min-height: calc(100% - var(--top-h)); }
+body.nav-closed .shell { grid-template-columns: 0 minmax(0, 1fr); }
+.nav {
+  position: sticky; top: calc(var(--top-h) + env(safe-area-inset-top, 0px));
+  height: calc(100dvh - var(--top-h) - env(safe-area-inset-top, 0px));
+  overflow-y: auto; overflow-x: hidden; background: var(--surface); border-right: 1px solid var(--line);
+  padding: 16px 14px 32px;
+}
+body.nav-closed .nav { visibility: hidden; padding: 0; border: 0; }
+.search { position: relative; margin-bottom: 18px; }
+.search input {
+  width: 100%; height: 40px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2);
+  padding: 0 12px 0 34px; font: inherit; font-size: 14px; color: var(--ink);
+}
+.search svg { position: absolute; left: 11px; top: 12px; width: 16px; height: 16px; stroke: var(--muted); fill: none; stroke-width: 2; }
+.nav-label { font-family: var(--f-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 18px 8px 6px; }
+.nav ul { list-style: none; margin: 0; padding: 0; }
+.nav-link {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%;
+  padding: 7px 10px; border-radius: 6px; text-decoration: none; color: var(--ink); font-size: 14px;
+  border: 0; background: none; cursor: pointer; text-align: left;
+}
+.nav-link:hover { background: var(--surface-2); }
+.nav-link[aria-current="page"] { background: var(--accent-soft); color: var(--accent); font-weight: 500; }
+.nav-cat > .nav-link .count { font-family: var(--f-mono); font-size: 11px; color: var(--muted); }
+.nav-cat .chev { width: 14px; height: 14px; stroke: var(--muted); fill: none; stroke-width: 2; transition: transform .15s; flex: none; }
+.nav-cat[data-open="true"] .chev { transform: rotate(90deg); }
+.nav-cat > ul { padding-left: 12px; margin: 2px 0 6px 10px; border-left: 1px solid var(--line); }
+.nav-cat[data-open="false"] > ul { display: none; }
+.nav-soon { padding: 6px 10px; font-size: 13px; color: var(--muted); display: flex; justify-content: space-between; gap: 8px; }
+.nav-soon span:last-child { font-family: var(--f-mono); font-size: 10px; }
+.quick { display: grid; gap: 4px; padding: 4px 0 8px 10px; }
+.qcopy {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  border: 1px solid var(--line); background: var(--surface-2); border-radius: 6px;
+  padding: 5px 10px; font-size: 12px; cursor: pointer; text-align: left;
+}
+.qcopy:hover { border-color: var(--accent); }
+.qcopy .k { font-family: var(--f-mono); color: var(--muted); font-size: 11px; }
+.qcopy.done { border-color: var(--ok); color: var(--ok); }
+.scrim { display: none; }
+
+/* main */
+.main { min-width: 0; padding: 0 16px; }
+.col { max-width: 760px; margin: 0 auto; padding-block: 8px 80px; }
+h1, h2, h3 { text-wrap: balance; line-height: 1.4; letter-spacing: .01em; }
+h1 { font-size: 28px; margin: 28px 0 8px; font-weight: 700; }
+h2 { font-size: 20px; margin: 44px 0 14px; font-weight: 700; }
+h3 { font-size: 17px; margin: 0; font-weight: 700; }
+.eyebrow { font-family: var(--f-mono); font-size: 12px; letter-spacing: .1em; color: var(--accent); margin: 28px 0 0; text-transform: uppercase; }
+.eyebrow + h1 { margin-top: 4px; }
+.lead { color: var(--muted); margin: 0 0 24px; }
+
+/* list */
+.cards { display: grid; gap: 12px; }
+.card { display: block; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; text-decoration: none; color: var(--ink); transition: border-color .15s, transform .15s; }
+a.card:hover { border-color: var(--accent); transform: translateY(-1px); }
+.card.soon { background: transparent; border-style: dashed; }
+.card.soon h3, .card.soon p { color: var(--muted); }
+.card .cat { font-family: var(--f-mono); font-size: 11px; letter-spacing: .1em; color: var(--muted); }
+.card h3 { margin: 2px 0 4px; }
+.card p { margin: 0 0 10px; font-size: 14px; color: var(--muted); }
+.meta { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; margin: 0; padding: 0; list-style: none; font-variant-numeric: tabular-nums; }
+.meta li { white-space: nowrap; }
+.stars { color: var(--accent); letter-spacing: .12em; }
+.stars .off { color: var(--line); }
+.status { display: inline-flex; align-items: center; gap: 6px; font-family: var(--f-mono); font-size: 11px; border-radius: 999px; padding: 1px 9px; line-height: 1.8; }
+.status::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.status.check { background: transparent; color: var(--muted); border: 1px solid var(--line); }
+.status.verified { background: var(--ok-soft); color: var(--ok); }
+.status.soon { background: var(--surface-2); color: var(--muted); }
+
+/* recipe header */
+.summary { margin: 0 0 18px; }
+.spec { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; margin: 0; }
+.spec div { background: var(--surface); padding: 10px 14px; min-width: 0; }
+.spec dt { font-family: var(--f-mono); font-size: 11px; color: var(--muted); letter-spacing: .08em; }
+.spec dd { margin: 0; font-weight: 700; font-variant-numeric: tabular-nums; }
+.spec dd .sub { display: block; font-weight: 400; font-size: 12px; color: var(--muted); }
+.spec dd .sub.warn { color: var(--muted); }
+.material { margin: 12px 0 0; font-size: 14px; color: var(--muted); }
+.caution { background: var(--note-bg); border: 1px solid var(--note-line); border-radius: 12px; padding: 12px 16px; margin-top: 16px; font-size: 14px; }
+.caution strong { color: var(--ink); }
+.caution ul { margin: 4px 0 0; padding-left: 1.2em; }
+
+/* steps */
+.steps { list-style: none; margin: 0; padding: 0; position: relative; }
+.steps::before { content: ""; position: absolute; left: 19px; top: 20px; bottom: 20px; width: 2px; background: linear-gradient(var(--accent), var(--line)); }
+.step { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 0 16px; padding-bottom: 32px; position: relative; }
+.step:last-child { padding-bottom: 0; }
+.num { width: 40px; height: 40px; border-radius: 10px; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font-family: var(--f-mono); font-weight: 500; font-size: 15px; position: relative; z-index: 1; }
+.step.optional .num { background: var(--surface); color: var(--accent); border: 2px dashed var(--accent); }
+.step-tag { font-family: var(--f-mono); font-size: 11px; letter-spacing: .1em; color: var(--muted); display: block; line-height: 1.4; }
+.step-body p { margin: 6px 0 12px; }
+.opt { font-size: 12px; color: var(--muted); font-weight: 400; margin-left: 8px; }
+
+.panel { border-radius: 12px; overflow: hidden; background: var(--panel-bg); color: var(--panel-fg); border: 1px solid var(--panel-line); }
+.panel-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; padding: 8px 8px 8px 14px; background: var(--panel-head); border-bottom: 1px solid var(--panel-line); }
+.panel-head .file { font-family: var(--f-mono); font-size: 12px; color: var(--panel-muted); display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.dots { display: inline-flex; gap: 5px; }
+.dots i { width: 8px; height: 8px; border-radius: 50%; background: var(--panel-line); display: block; }
+.chars { color: var(--panel-fg); }
+.copy { background: transparent; color: var(--accent); border: 1px solid var(--accent); border-radius: 8px; padding: 7px 15px; font-weight: 700; cursor: pointer; min-height: 40px; display: inline-flex; align-items: center; gap: 8px; transition: background .15s; }
+.copy:hover { background: var(--accent-soft); }
+.copy svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; }
+.copy.done { color: var(--ok); border-color: var(--ok); background: var(--ok-soft); }
+.panel pre { margin: 0; padding: 14px 16px; max-height: 10em; overflow: hidden; font-family: var(--f-mono); font-size: 13px; line-height: 1.75; white-space: pre-wrap; word-break: break-all; position: relative; }
+.panel.open pre { max-height: none; overflow: auto; }
+.panel:not(.open) pre::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 4em; background: linear-gradient(transparent, var(--panel-bg)); }
+.expand { width: 100%; border: 0; border-top: 1px solid var(--panel-line); background: var(--panel-head); color: var(--panel-muted); padding: 7px; cursor: pointer; font-size: 12px; font-family: var(--f-mono); }
+.expand:hover { color: var(--panel-fg); }
+.copy-msg { font-size: 13px; color: var(--ok); min-height: 1.5em; margin: 6px 0 0; }
+.answer { font-family: var(--f-mono); font-size: 14px; background: var(--surface); border: 1px dashed var(--line); border-radius: 8px; padding: 8px 14px; margin: 0 0 8px; white-space: pre-wrap; }
+.note { font-size: 14px; color: var(--muted); }
+
+/* tips */
+details.box { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; margin-top: 12px; }
+details.box > summary { cursor: pointer; padding: 12px 16px; font-weight: 700; list-style: none; display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+details.box > summary::-webkit-details-marker { display: none; }
+details.box > summary::after { content: "+"; font-family: var(--f-mono); color: var(--muted); font-size: 18px; }
+details.box[open] > summary::after { content: "−"; }
+.box-body { padding: 0 16px 16px; }
+.box-body ol { margin: 0; padding-left: 1.3em; display: grid; gap: 12px; }
+.box-body li b { display: block; }
+.mini-panel { margin-top: 8px; }
+.mini-panel pre { max-height: none; }
+
+/* checklist */
+.checklist { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.checklist label { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 12px; align-items: start; padding: 10px 14px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); cursor: pointer; }
+.checklist input { width: 18px; height: 18px; margin: 5px 0 0; accent-color: var(--ok); }
+.checklist input:checked + span { color: var(--muted); text-decoration: line-through; }
+.meter { height: 4px; background: var(--surface-2); border-radius: 999px; overflow: hidden; margin-top: 12px; }
+.meter i { display: block; height: 100%; width: 0; background: var(--ok); transition: width .2s; }
+.progress { font-family: var(--f-mono); font-size: 12px; color: var(--muted); margin: 6px 0 0; }
+
+.why-body { max-width: 65ch; }
+.tbl { overflow-x: auto; }
+.why-body table { border-collapse: collapse; font-size: 14px; width: 100%; }
+.why-body th, .why-body td { text-align: left; border-bottom: 1px solid var(--line); padding: 6px 8px; vertical-align: top; }
+.why-body th { font-family: var(--f-mono); font-size: 11px; letter-spacing: .08em; color: var(--muted); font-weight: 500; }
+.flow { font-family: var(--f-mono); font-size: 13px; background: var(--surface-2); border-radius: 8px; padding: 12px 14px; overflow-x: auto; white-space: pre; }
+.foot { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 8px 20px; }
+
+/* guide */
+.trio { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }
+.trio li { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+.trio .k { font-family: var(--f-mono); font-size: 12px; color: var(--accent); }
+.trio b { display: block; font-size: 18px; margin: 2px 0 4px; }
+.trio p { margin: 0; font-size: 14px; color: var(--muted); }
+
+/* source labels */
+[data-src] { position: relative; }
+body.show-src [data-src] { outline: 1px dashed var(--src); outline-offset: 4px; }
+body.show-src [data-src]::before {
+  content: attr(data-src); position: absolute; top: -11px; right: 4px; z-index: 3;
+  font: 500 11px/1.6 var(--f-mono); color: var(--src); background: var(--src-soft);
+  padding: 0 6px; border-radius: 4px; white-space: nowrap;
+}
+
+@media (max-width: 899px) {
+  .shell, body.nav-closed .shell { grid-template-columns: minmax(0, 1fr); }
+  .nav {
+    position: fixed; left: 0; top: calc(var(--top-h) + env(safe-area-inset-top, 0px)); bottom: 0; z-index: 25;
+    width: min(var(--nav-w), 86vw); height: auto; transform: translateX(-100%); transition: transform .2s;
+    visibility: visible; padding: 16px 14px 32px; border-right: 1px solid var(--line);
+  }
+  body.nav-open .nav { transform: none; }
+  body.nav-closed .nav { padding: 16px 14px 32px; border-right: 1px solid var(--line); }
+  .scrim { display: block; position: fixed; inset: 0; background: var(--scrim); z-index: 20; opacity: 0; pointer-events: none; transition: opacity .2s; }
+  body.nav-open .scrim { opacity: 1; pointer-events: auto; }
+  .srcswitch .lbl { display: none; }
+}
+@media (max-width: 480px) {
+  h1 { font-size: 23px; }
+  .step { grid-template-columns: 32px minmax(0, 1fr); gap: 0 12px; }
+  .steps::before { left: 15px; }
+  .num { width: 32px; height: 32px; font-size: 13px; border-radius: 8px; }
+  .brand .name-long { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; } }
+</style>
+
+<header class="top">
+  <button class="icon-btn" id="nav-toggle" aria-label="メニューを開閉" aria-controls="nav" aria-expanded="true">
+    <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+  </button>
+  <a class="brand" href="#top"><span class="mark" aria-hidden="true"></span><span>AI業務レシピ</span><span class="beta">BETA</span></a>
+  <span class="spacer"></span>
+  <label class="srcswitch" title="各ブロックの素材ファイルを表示（モック用）"><input type="checkbox" id="toggle-src"><span class="lbl">素材ファイルを表示</span><span aria-hidden="true">mock</span></label>
+</header>
+
+<div class="shell">
+  <nav class="nav" id="nav" aria-label="サイトメニュー">
+    <div class="search">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      <input type="search" id="q" placeholder="レシピを探す（例：議事録）" aria-label="レシピを探す">
+    </div>
+
+    <ul>
+      <li><a class="nav-link" href="#guide-start" data-route="guide-start">はじめての方へ</a></li>
+      <li><a class="nav-link" href="#top" data-route="top">すべてのレシピ</a></li>
+    </ul>
+
+    <p class="nav-label">業務から探す</p>
+    <ul id="nav-cats">
+      <li class="nav-cat" data-open="true" data-cat="meeting">
+        <button class="nav-link" data-toggle-cat><span>会議</span><span style="display:flex;gap:8px;align-items:center"><span class="count">1</span><svg class="chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span></button>
+        <ul>
+          <li data-title="文字起こしから議事録を作る 議事録 会議 文字起こし">
+            <a class="nav-link" href="#minutes-from-transcript" data-route="minutes-from-transcript">文字起こしから議事録</a>
+            <div class="quick" aria-label="プロンプトをすぐコピー">
+              <button class="qcopy" data-copy="p1-text"><span>STEP 1 をコピー</span><span class="k" data-n="p1-text"></span></button>
+              <button class="qcopy" data-copy="p3-text"><span>STEP 3 をコピー</span><span class="k" data-n="p3-text"></span></button>
+            </div>
+          </li>
+        </ul>
+      </li>
+      <li class="nav-cat" data-open="false" data-cat="summary">
+        <button class="nav-link" data-toggle-cat><span>要約</span><span style="display:flex;gap:8px;align-items:center"><span class="count">0</span><svg class="chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span></button>
+        <ul><li class="nav-soon" data-title="長文資料を要点整理する 要約"><span>長文資料の要点整理</span><span>SOON</span></li></ul>
+      </li>
+      <li class="nav-cat" data-open="false" data-cat="email">
+        <button class="nav-link" data-toggle-cat><span>メール</span><span style="display:flex;gap:8px;align-items:center"><span class="count">0</span><svg class="chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span></button>
+        <ul><li class="nav-soon" data-title="メール・通知文の下書きを作る メール"><span>メール・通知文の下書き</span><span>SOON</span></li></ul>
+      </li>
+      <li class="nav-cat" data-open="false" data-cat="planning">
+        <button class="nav-link" data-toggle-cat><span>企画</span><span style="display:flex;gap:8px;align-items:center"><span class="count">0</span><svg class="chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span></button>
+        <ul><li class="nav-soon" data-title="企画書のたたき台を作る 企画"><span>企画書のたたき台</span><span>SOON</span></li></ul>
+      </li>
+      <li class="nav-cat" data-open="false" data-cat="organize">
+        <button class="nav-link" data-toggle-cat><span>情報整理</span><span style="display:flex;gap:8px;align-items:center"><span class="count">0</span><svg class="chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span></button>
+        <ul><li class="nav-soon" data-title="情報を分類・一覧化する 情報整理"><span>情報の分類・一覧化</span><span>SOON</span></li></ul>
+      </li>
+    </ul>
+
+    <p class="nav-label">困ったとき</p>
+    <ul>
+      <li><a class="nav-link" href="#guide-too-long" data-route="guide-too-long">長すぎて送れないとき</a></li>
+      <li><a class="nav-link" href="#guide-start-safety">入力してはいけない情報</a></li>
+    </ul>
+
+    <p class="nav-label">このサイトについて</p>
+    <ul>
+      <li><a class="nav-link" href="#guide-start">最低動作モデルとは</a></li>
+      <li><span class="nav-soon"><span>ご意見フォーム</span><span>FORM</span></span></li>
+      <li><span class="nav-soon"><span>技術者の方へ（GitHub）</span><span>↗</span></span></li>
+    </ul>
+  </nav>
+  <div class="scrim" id="scrim"></div>
+
+  <div class="main">
+    <div class="col">
+
+      <!-- list -->
+      <section id="view-top" data-view>
+        <p class="eyebrow">Recipes</p>
+        <h1>業務から探す</h1>
+        <p class="lead">プロンプトをコピーして、資料を貼るだけ。AIの知識は必要ありません。</p>
+        <div class="cards">
+          <a class="card" href="#minutes-from-transcript" data-src="page.md（フロントマター）">
+            <span class="cat">MEETING · 会議</span>
+            <h3>文字起こしから議事録を作る</h3>
+            <p>会議の文字起こしを貼るだけで、決定事項・ToDo・持ち越し事項が整理された議事録を作ります。</p>
+            <ul class="meta">
+              <li>⏱ 約3〜5分</li>
+              <li><span class="stars" aria-label="難易度 1/3">★<span class="off">★★</span></span></li>
+              <li>操作 3ステップ</li>
+              <li><span class="status check">GPT-4.1 未検証</span></li>
+            </ul>
+          </a>
+          <div class="card soon"><span class="cat">SUMMARY · 要約</span><h3>長文資料を要点整理する</h3><p>報告書や資料を、目的に合わせて短時間で把握できる形に整理します。</p><ul class="meta"><li><span class="status soon">準備中</span></li></ul></div>
+          <div class="card soon"><span class="cat">EMAIL · メール</span><h3>メール・通知文の下書きを作る</h3><p>事実・依頼・期限・宛先を整理してから、連絡文の下書きを作ります。</p><ul class="meta"><li><span class="status soon">準備中</span></li></ul></div>
+          <div class="card soon"><span class="cat">PLANNING · 企画</span><h3>企画書のたたき台を作る</h3><p>目的・対象・課題・施策を順に埋めて、企画書の初稿を作ります。</p><ul class="meta"><li><span class="status soon">準備中</span></li></ul></div>
+          <div class="card soon"><span class="cat">ORGANIZE · 情報整理</span><h3>情報を分類・一覧化する</h3><p>メモや問い合わせを、決めた基準で分類して一覧にします。</p><ul class="meta"><li><span class="status soon">準備中</span></li></ul></div>
+        </div>
+      </section>
+
+      <!-- recipe -->
+      <section id="view-minutes-from-transcript" data-view hidden>
+        <p class="eyebrow">Meeting · 会議</p>
+        <h1 data-src="page.md（title）">文字起こしから議事録を作る</h1>
+        <p class="summary" data-src="page.md（summary）">会議の文字起こしを貼るだけで、決定事項・ToDo・持ち越し事項が整理された議事録を作ります。</p>
+        <dl class="spec" data-src="page.md（フロントマター）">
+          <div><dt>TIME</dt><dd>約3〜5分<span class="sub warn">目標・未実測</span></dd></div>
+          <div><dt>LEVEL</dt><dd><span class="stars" aria-label="難易度 1/3">★<span class="off">★★</span></span><span class="sub">AIの知識は不要</span></dd></div>
+          <div><dt>STEPS</dt><dd>3ステップ<span class="sub">質問がなければ2</span></dd></div>
+          <div><dt>MIN. MODEL</dt><dd>GPT-4.1<span class="sub warn">未検証</span></dd></div>
+        </dl>
+        <p class="material" data-src="page.md（materials）">用意するもの：会議の文字起こし、組織で利用が認められているチャット型のAI</p>
+        <div class="caution" data-src="page.md（使う前に）">
+          <strong>使う前に</strong>　次の情報は入力しないでください。
+          <ul>
+            <li>組織の規定でAIへの入力が認められていない会議の内容</li>
+            <li>不要な個人情報（連絡先、健康や人事評価に関する発言など）。必要なときは「Aさん」「B社」のように置き換えてください</li>
+          </ul>
+        </div>
+
+        <h2>使い方</h2>
+        <ol class="steps">
+          <li class="step">
+            <div class="num" aria-hidden="true">01</div>
+            <div class="step-body" data-src="page.md（使い方 ①）">
+              <span class="step-tag">STEP 1</span>
+              <h3>文字起こしを貼る</h3>
+              <p>プロンプトをコピーして、<b>【ここに文字起こしを貼り付けてください】</b>の部分を会議の文字起こしに置き換えて送信します。</p>
+              <div class="panel" id="p1" data-src="prompts/step1-extract.txt">
+                <div class="panel-head">
+                  <span class="file"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>step1-extract<span class="chars" data-n="p1-text"></span></span>
+                  <button class="copy" data-copy="p1-text"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/></svg><span>コピー</span></button>
+                </div>
+                <pre id="p1-text">あなたは、会議の文字起こしから正確な議事録を作成する担当者です。
+
+これから議事録を作成します。
+この段階では完成版の議事録は作らず、以下の文字起こしから
+「議事録を作成するために必要な情報」を正確に抽出・整理してください。
+
+# 最重要原則
+
+文字起こしに記録されている内容を事実の根拠としてください。
+
+文字起こしにない事実を推測して追加しないでください。
+特に、決定事項・担当者・期限・数値・固有名詞を推測で確定してはいけません。
+
+「発言されたこと」と「会議として決まったこと」は別です。
+意見や提案があっただけの場合は、決定事項として扱わないでください。
+
+
+# 処理手順
+
+必ず次の順番で処理してください。
+
+## 1. 抽出
+
+文字起こし全体を確認し、議事録に必要な情報を抽出してください。
+
+以下は整理・除外して構いません。
+
+- 「えー」「あのー」などのフィラー
+- 意味のない相づち
+- 同じ内容の重複
+- 明らかな言い直し
+- 議事録に不要な雑談
+
+ただし、発言の意味や結論を変えてはいけません。
+
+
+## 2. 判定
+
+抽出した内容を、次の基準で判定してください。
+
+【議論・意見】
+会議中に出された説明、意見、質問、提案など。
+
+【結論】
+その議題について、最終的にどのような状態になったか。
+途中で結論が変わった場合は、最後の結論を採用してください。
+
+【決定事項】
+会議として明確に合意・確定したこと。
+単なる意見、提案、検討案は含めません。
+
+【ToDo】
+会議後に誰かが実行・確認・対応すること。
+「担当者」「内容」「期限」をそれぞれ確認してください。
+
+【持ち越し事項】
+結論が出ていないこと、継続検討となったこと、
+次回以降に判断・確認すること。
+
+
+## 3. 整理
+
+以下の形式で必ず整理してください。
+
+# 会議情報
+- 会議名：
+- 日時：
+- 参加者：
+
+文字起こしから確認できない項目は「不明」としてください。
+
+# 議題と議論
+
+## 議題1：〇〇
+- 主な議論：
+- 主な意見・提案：
+- 結論：
+
+## 議題2：〇〇
+- 主な議論：
+- 主な意見・提案：
+- 結論：
+
+議題数に応じて増減してください。
+
+# 決定事項
+-
+-
+
+明確な決定事項がない場合は「なし」としてください。
+
+# ToDo
+
+| 担当者 | 内容 | 期限 |
+|---|---|---|
+| | | |
+
+不明な項目は「不明」としてください。
+推測で補完しないでください。
+
+# 持ち越し事項
+-
+-
+
+ない場合は「なし」としてください。
+
+# その他の重要事項
+-
+
+上記に分類できないものの、議事録に残す価値がある重要事項のみ記載してください。
+
+
+## 4. 確認
+
+最後に、上記の整理結果を確認してください。
+
+正確な議事録を作るうえで重要な情報が不足・曖昧で、
+利用者に確認することで議事録の正確性が大きく向上する場合だけ、
+質問してください。
+
+質問する必要がない細かな情報については質問しないでください。
+
+特に確認対象となり得るのは以下です。
+
+- 決定したのか、単なる提案なのか判断できない
+- 重要なToDoの担当者が分からない
+- 重要なToDoの期限が分からない
+- 固有名詞の誤変換が疑われ、意味が変わる可能性がある
+- 誰の発言かによって意味が大きく変わる
+
+質問が必要な場合は、
+
+# 確認したいこと
+
+1. ○○について、〜でしょうか？
+2. ○○について、〜でしょうか？
+
+のように、短く回答できる形で質問してください。
+候補が絞れる場合は、「A：〜　B：〜」のように選択肢を添えてください。
+
+重要な確認事項がない場合は、
+
+# 確認したいこと
+重要な確認事項はありません。
+
+としてください。
+
+
+# 禁止事項
+
+以下は行わないでください。
+
+- 文字起こしにない情報の創作
+- 文脈だけを根拠とした担当者・期限の確定
+- 提案を決定事項に変更すること
+- 未決定事項を決定済みとして扱うこと
+- 発言者の意図を変えること
+- 不明な固有名詞を勝手に修正すること
+- 議事録の見栄えを良くするための事実の補完
+- 不要な質問を大量にすること
+
+この段階では完成版の議事録を作成しないでください。
+
+
+# 文字起こし
+
+↓↓↓ ここから文字起こし ↓↓↓
+
+
+【ここに文字起こしを貼り付けてください】
+
+
+↑↑↑ 文字起こしはここまで ↑↑↑
+
+※ 上の欄が「【ここに文字起こしを貼り付けてください】」のままの場合は、
+まだ処理を始めず、「文字起こしを貼り付けてください」とだけ返答してください。
+次のメッセージで受け取った文字起こしに対して、上の手順を実行してください。
+
+
+最後にもう一度確認してください。
+文字起こしにない事実を推測せず、
+「意見・提案」「決定事項」「ToDo」「持ち越し事項」を
+混同しないように整理してください。</pre>
+                <button class="expand" data-target="p1">全文を表示 ▾</button>
+              </div>
+              <p class="copy-msg" data-msg="p1-text" aria-live="polite"></p>
+              <p class="note">議事録に必要な情報が整理されて返ってきます。まだ完成版ではありません。</p>
+            </div>
+          </li>
+          <li class="step optional">
+            <div class="num" aria-hidden="true">02</div>
+            <div class="step-body" data-src="page.md（使い方 ②）">
+              <span class="step-tag">STEP 2 · 必要なときだけ</span>
+              <h3>質問に答える</h3>
+              <p>AIから「確認したいこと」があれば、短く答えます。「重要な確認事項はありません」と返ってきたら、このステップは飛ばしてください。</p>
+              <div class="answer">1. 田中さんです
+2. 10月31日です</div>
+              <p class="note">分からないときは「不明です。そのまま進めてください」で大丈夫です。</p>
+            </div>
+          </li>
+          <li class="step">
+            <div class="num" aria-hidden="true">03</div>
+            <div class="step-body" data-src="page.md（使い方 ③）">
+              <span class="step-tag">STEP 3</span>
+              <h3>議事録に仕上げる</h3>
+              <p><b>同じ会話の中で</b>、完成版を作るプロンプトをコピーして送信します。</p>
+              <div class="panel" id="p3" data-src="prompts/step3-finish.txt">
+                <div class="panel-head">
+                  <span class="file"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>step3-finish<span class="chars" data-n="p3-text"></span></span>
+                  <button class="copy" data-copy="p3-text"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/></svg><span>コピー</span></button>
+                </div>
+                <pre id="p3-text">ここまでに整理した内容と、私が追加で回答した内容をもとに、
+完成版の議事録を作成してください。
+
+新たに元の文字起こしを解釈し直すのではなく、
+STEP 1で整理した情報と、その後の私の回答を主な根拠として作成してください。
+
+# 目的
+
+会議に参加していない人が読んでも、
+
+「何について話し合ったのか」
+「どのような議論があったのか」
+「何が決まったのか」
+「次に誰が何をするのか」
+
+を短時間で理解できる議事録にしてください。
+
+
+# 出力形式
+
+## 1. 会議概要
+
+- 会議名：
+- 日時：
+- 参加者：
+
+
+## 2. 議題ごとの要点
+
+議題ごとに整理してください。
+
+### 議題1：〇〇
+
+**主な議論**
+-
+
+**結論**
+-
+
+必要に応じて議題を追加してください。
+
+議論の経緯をすべて再現する必要はありません。
+結論を理解するために必要な意見・論点を中心に簡潔にまとめてください。
+
+
+## 3. 決定事項
+
+会議で明確に合意・確定したことだけを箇条書きにしてください。
+
+-
+
+決定事項がない場合は「なし」としてください。
+
+
+## 4. ToDo・ネクストアクション
+
+| 担当者 | 内容 | 期限 |
+|---|---|---|
+| | | |
+
+担当者または期限が確認できていない場合は「要確認」としてください。
+
+ToDoがない場合は「なし」としてください。
+
+
+## 5. 次回への持ち越し事項
+
+結論が出なかったこと、
+継続検討すること、
+次回以降に確認・判断することを記載してください。
+
+-
+
+ない場合は「なし」としてください。
+
+
+## 6. 要確認事項
+
+議事録完成時点でも確認できていない重要事項だけを記載してください。
+
+-
+
+要確認事項がない場合、この項目自体を省略してください。
+
+
+# 編集ルール
+
+- 読みやすく、簡潔な文章にしてください。
+- 発言を時系列にそのまま並べるのではなく、議題単位で整理してください。
+- 発言者の意図やニュアンスを変えないでください。
+- 同じ内容を不必要に繰り返さないでください。
+- 意見や提案を決定事項に変更しないでください。
+- 決定事項とToDoを混同しないでください。
+- 未確定事項を確定表現に変更しないでください。
+- 私が追加回答した情報は、文字起こしより新しい補足情報として反映してください。
+- STEP 1および私の回答にない事実を新たに作らないでください。
+
+
+# 最終確認
+
+出力する前に、完成した議事録を確認してください。
+
+次の5点を確認し、問題があれば修正してから出力してください。
+
+1. 推測によって追加した事実がないか
+2. 意見・提案を決定事項として記載していないか
+3. 決定事項とToDoを混同していないか
+4. 重要な決定事項・ToDo・持ち越し事項が抜けていないか
+5. 担当者や期限が不明なのに確定した表現にしていないか
+
+確認作業そのものは出力せず、
+確認後の完成版議事録だけを出力してください。</pre>
+                <button class="expand" data-target="p3">全文を表示 ▾</button>
+              </div>
+              <p class="copy-msg" data-msg="p3-text" aria-live="polite"></p>
+              <p class="note">会議概要、議題ごとの要点、決定事項、ToDo、持ち越し事項がまとまった議事録が返ってきます。</p>
+            </div>
+          </li>
+        </ol>
+
+        <details class="box" data-src="page.md（長すぎて送れないとき）">
+          <summary>長すぎて送れないとき</summary>
+          <div class="box-body">
+            <p class="note" style="margin-top:0">AIのサービスによっては、1回に送れる文字数に上限があります。次の順に試してください。</p>
+            <ol>
+              <li><b>プロンプトと文字起こしを分けて送る</b>STEP 1のプロンプトを、文字起こしを貼らずにそのまま送ります。「文字起こしを貼り付けてください」と返ってきたら、次のメッセージで文字起こしだけを送ります。</li>
+              <li><b>文字起こしも何回かに分けて送る</b>プロンプトを送ったあと、まず次のメッセージを送り、続けて文字起こしを区切って送ります。最後に「以上です」と送ります。
+                <div class="panel open mini-panel">
+                  <div class="panel-head"><span class="file"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>分割送信の定型文</span><button class="copy" data-copy="split-text"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/></svg><span>コピー</span></button></div>
+                  <pre id="split-text">文字起こしが長いため、何回かに分けて送ります。
+「以上です」と送るまでは処理を始めず、「受け取りました」とだけ返答してください。
+「以上です」を受け取ったら、すべての文字起こしをつなげて、最初の指示どおりに処理してください。</pre>
+                </div>
+                <p class="copy-msg" data-msg="split-text" aria-live="polite"></p>
+              </li>
+              <li><b>会議を区切って使う</b>それでも難しいときは、議題ごと、または前半・後半に分けて、それぞれでこのレシピを使ってください。</li>
+            </ol>
+          </div>
+        </details>
+
+        <h2>最後に確認すること</h2>
+        <div data-src="page.md（最後に確認すること）">
+          <p class="note" style="margin-top:-6px">共有する前に、次の点だけは確認してください。</p>
+          <ul class="checklist" id="checklist">
+            <li><label><input type="checkbox" id="c1"><span>決定事項は、本当に会議で決まったことですか（意見や提案が混ざっていませんか）</span></label></li>
+            <li><label><input type="checkbox" id="c2"><span>ToDoの担当者と期限は正しいですか</span></label></li>
+            <li><label><input type="checkbox" id="c3"><span>金額・数量・日付・固有名詞は正しいですか</span></label></li>
+            <li><label><input type="checkbox" id="c4"><span>「要確認事項」が残っている場合、そのまま共有してよいですか</span></label></li>
+            <li><label><input type="checkbox" id="c5"><span>読む人に不要な発言や個人情報が残っていませんか</span></label></li>
+          </ul>
+          <div class="meter" aria-hidden="true"><i id="meter"></i></div>
+          <p class="progress" id="progress">0 / 5 確認済み</p>
+        </div>
+
+        <details class="box" data-src="page.md（なぜうまくいくの？）">
+          <summary>なぜこのプロンプトでうまくいくの？</summary>
+          <div class="box-body why-body">
+            <p style="margin-top:0">「この文字起こしから議事録を作って」と一度に頼むと、AIは「重要な情報を探す」「意見と決定を見分ける」「担当者と期限を判断する」「読みやすく書く」といった多くの仕事を同時にこなす必要があります。そのとき、分からない部分を自然な文章で補ってしまい、誤りに気づきにくくなります。</p>
+            <div class="flow">STEP 1  情報を探して分類する（まだ文章にしない）
+   ↓
+STEP 2  AIだけで判断できない重要なことだけ質問する
+   ↓
+STEP 3  整理済みの情報だけで議事録に仕上げる</div>
+            <p>特に大事なのは、次の区別です。プロンプトでは、これらの意味をAIに具体的に伝えています。</p>
+            <div class="tbl"><table>
+              <thead><tr><th>発言の例</th><th>扱い</th></tr></thead>
+              <tbody>
+                <tr><td>「来月から始めた方がいいと思います」</td><td>意見・提案</td></tr>
+                <tr><td>「では来月1日から開始します」</td><td>決定事項</td></tr>
+                <tr><td>「田中さん、今月末までにマニュアルを作成してください」</td><td>ToDo</td></tr>
+              </tbody>
+            </table></div>
+            <p>話者が分からない文字起こしや、「例の件」のような指示語が多い会議は苦手です。最後の確認だけは、人の目で行ってください。</p>
+          </div>
+        </details>
+
+        <p class="foot"><span class="mono">v0.5.0 · Draft</span><span>技術者の方へ：<a href="#minutes-from-transcript" class="dead">設計・評価・改訂履歴を見る（GitHub）</a></span></p>
+      </section>
+
+      <!-- guide: start -->
+      <section id="view-guide-start" data-view hidden>
+        <p class="eyebrow">Guide</p>
+        <h1>はじめての方へ</h1>
+        <p class="lead">AI業務レシピは、AIに詳しくなくても、普段の仕事を短時間で終わらせるための手順集です。どのレシピも、基本の操作は同じです。</p>
+        <ul class="trio">
+          <li><span class="k">01</span><b>貼る</b><p>プロンプトをコピーして、資料と一緒にAIへ送ります。</p></li>
+          <li><span class="k">02</span><b>答える</b><p>AIから質問があったときだけ、短く答えます。</p></li>
+          <li><span class="k">03</span><b>仕上げる</b><p>仕上げ用のプロンプトを送り、完成品を受け取ります。</p></li>
+        </ul>
+        <h2 id="guide-start-safety">入力してはいけない情報</h2>
+        <p>組織の規定でAIへの入力が認められていない情報は、入力しないでください。個人名や会社名は、必要に応じて「Aさん」「B社」のように置き換えてから使います。</p>
+        <h2>最低動作モデルとは</h2>
+        <p>ソフトウェアの「動作環境」と同じ考え方です。各レシピには、どのAIで動作を確かめたかを表示しています。古いモデルでも使えることを大切にしているため、最新のAIでなくても安心して試せます。「未検証」と表示されているレシピは、まだ確認が済んでいません。</p>
+        <h2>最後は人が確認する</h2>
+        <p>AIの出力は下書きです。各レシピの「最後に確認すること」だけは、共有する前に必ず確認してください。</p>
+      </section>
+
+      <!-- guide: too long -->
+      <section id="view-guide-too-long" data-view hidden>
+        <p class="eyebrow">Help</p>
+        <h1>長すぎて送れないとき</h1>
+        <p class="lead">組織向けのAIサービスには、1回に送れる文字数に上限があることがあります。各レシピのページで、プロンプトの文字数を確認できます。</p>
+        <ol style="display:grid;gap:16px;padding-left:1.3em">
+          <li><b>プロンプトと資料を分けて送る</b><br>プロンプトを、資料を貼らずにそのまま送ります。「貼り付けてください」と返ってきたら、次のメッセージで資料だけを送ります。</li>
+          <li><b>資料も何回かに分けて送る</b><br>レシピのページにある定型文を先に送ってから、資料を区切って送り、最後に「以上です」と送ります。</li>
+          <li><b>資料を区切って使う</b><br>それでも難しいときは、資料を内容のまとまりごとに分けて、それぞれでレシピを使ってください。</li>
+        </ol>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var body = document.body;
+  var mq = window.matchMedia('(max-width: 899px)');
+  var toggle = document.getElementById('nav-toggle');
+
+  function store(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  function load(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+
+  function setNav(open) {
+    if (mq.matches) {
+      body.classList.toggle('nav-open', open);
+      body.classList.remove('nav-closed');
+    } else {
+      body.classList.toggle('nav-closed', !open);
+      body.classList.remove('nav-open');
+      store('nav', open ? 'open' : 'closed');
+    }
+    toggle.setAttribute('aria-expanded', String(open));
+  }
+  function navIsOpen() { return mq.matches ? body.classList.contains('nav-open') : !body.classList.contains('nav-closed'); }
+  setNav(mq.matches ? false : load('nav') !== 'closed');
+  mq.addEventListener('change', function () { setNav(mq.matches ? false : load('nav') !== 'closed'); });
+  toggle.addEventListener('click', function () { setNav(!navIsOpen()); });
+  document.getElementById('scrim').addEventListener('click', function () { setNav(false); });
+
+  /* routing */
+  var routes = { 'top': 'view-top', 'minutes-from-transcript': 'view-minutes-from-transcript', 'guide-start': 'view-guide-start', 'guide-start-safety': 'view-guide-start', 'guide-too-long': 'view-guide-too-long' };
+  function route() {
+    var h = location.hash.replace('#', '') || 'top';
+    if (!routes[h]) h = 'top';
+    document.querySelectorAll('[data-view]').forEach(function (v) { v.hidden = v.id !== routes[h]; });
+    var current = h === 'guide-start-safety' ? 'guide-start' : h;
+    document.querySelectorAll('.nav-link[data-route]').forEach(function (a) {
+      if (a.getAttribute('data-route') === current && a.getAttribute('href') === '#' + h) a.setAttribute('aria-current', 'page');
+      else a.removeAttribute('aria-current');
+    });
+    if (h === 'guide-start-safety') document.getElementById('guide-start-safety').scrollIntoView();
+    else window.scrollTo(0, 0);
+    if (mq.matches) setNav(false);
+  }
+  window.addEventListener('hashchange', route);
+  route();
+
+  /* categories */
+  document.querySelectorAll('[data-toggle-cat]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var li = btn.closest('.nav-cat');
+      li.setAttribute('data-open', li.getAttribute('data-open') === 'true' ? 'false' : 'true');
+    });
+  });
+
+  /* search */
+  document.getElementById('q').addEventListener('input', function (e) {
+    var q = e.target.value.trim();
+    document.querySelectorAll('.nav-cat').forEach(function (cat) {
+      var hit = false;
+      cat.querySelectorAll('[data-title]').forEach(function (item) {
+        var ok = !q || item.getAttribute('data-title').indexOf(q) !== -1;
+        item.hidden = !ok; if (ok) hit = true;
+      });
+      cat.hidden = !!q && !hit;
+      if (q && hit) cat.setAttribute('data-open', 'true');
+    });
+  });
+
+  /* char counts */
+  document.querySelectorAll('[data-n]').forEach(function (el) {
+    var n = document.getElementById(el.getAttribute('data-n')).textContent.length;
+    el.textContent = n.toLocaleString('ja-JP') + '字';
+  });
+
+  /* copy */
+  function selectText(el) {
+    var r = document.createRange(); r.selectNodeContents(el);
+    var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+  }
+  document.querySelectorAll('[data-copy]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var id = btn.getAttribute('data-copy');
+      var pre = document.getElementById(id);
+      var msg = document.querySelector('[data-msg="' + id + '"]');
+      var label = btn.querySelector('span');
+      var original = label.textContent;
+      var ok = function () {
+        btn.classList.add('done'); label.textContent = 'コピーしました';
+        if (msg) msg.textContent = 'AIの入力欄に貼り付けてください。';
+        setTimeout(function () { btn.classList.remove('done'); label.textContent = original; }, 2200);
+      };
+      var fallback = function () {
+        if (btn.classList.contains('qcopy')) { location.hash = 'minutes-from-transcript'; }
+        var panel = pre.closest('.panel'); if (panel) panel.classList.add('open');
+        selectText(pre);
+        if (msg) msg.textContent = '全文を選択しました。Ctrl+C（Macは⌘+C）でコピーしてください。';
+      };
+      try { navigator.clipboard.writeText(pre.textContent).then(ok, fallback); } catch (e) { fallback(); }
+    });
+  });
+
+  document.querySelectorAll('.expand').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var p = document.getElementById(btn.getAttribute('data-target'));
+      var open = p.classList.toggle('open');
+      btn.textContent = open ? '折りたたむ ▴' : '全文を表示 ▾';
+    });
+  });
+
+  /* checklist */
+  var boxes = document.querySelectorAll('#checklist input');
+  boxes.forEach(function (b) {
+    b.addEventListener('change', function () {
+      var n = Array.prototype.filter.call(boxes, function (x) { return x.checked; }).length;
+      document.getElementById('meter').style.width = (n * 20) + '%';
+      document.getElementById('progress').textContent = n + ' / 5 確認済み' + (n === 5 ? ' · 共有の準備ができました' : '');
+    });
+  });
+
+  document.getElementById('toggle-src').addEventListener('change', function (e) { body.classList.toggle('show-src', e.target.checked); });
+  document.querySelectorAll('a.dead').forEach(function (a) { a.addEventListener('click', function (e) { e.preventDefault(); }); });
+})();
+</script>

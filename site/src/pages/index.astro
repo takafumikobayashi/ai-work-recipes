@@ -1,0 +1,20 @@
+---
+import Base from '../layouts/Base.astro';
+import RecipeCard from '../components/RecipeCard.astro';
+import { getRecipes, getCategories, getGuides } from '../lib/content';
+
+const recipes = getRecipes();
+// categories.yml の並び順で表示する
+const order = getCategories().map((c) => c.id);
+const sorted = [...recipes].sort((a, b) => order.indexOf(a.category) - order.indexOf(b.category));
+const start = getGuides().find((g) => g.id === 'start');
+---
+<Base>
+  <p class="eyebrow">Recipes</p>
+  <h1>業務から探す</h1>
+  <p class="lead">
+    プロンプトをコピーして、資料を貼るだけ。AIの知識は必要ありません。
+    {start && <>初めての方は<a href={start.url}>{start.data.title}</a>をご覧ください。</>}
+  </p>
+  <div class="cards">{sorted.map((r) => <RecipeCard recipe={r} />)}</div>
+</Base>
