@@ -38,12 +38,16 @@ export interface Step {
 
 export interface RecipeSections {
   steps: Step[];
-  caution?: string;
-  tooLong?: string;
-  checklist?: string;
-  why?: string;
+  caution: string;
+  tooLong: string;
+  checklist: string;
+  why: string;
   others: { title: string; html: string }[];
 }
+
+// docs/recipe-spec.md の「page.md の本文」で必須としている見出し。
+// 欠けると、入力してはいけない情報や人間による最終確認が、公開ページから黙って消えるため、ビルドを止める
+const REQUIRED_SECTIONS = ['使い方', '長すぎて送れないとき', '使う前に', '最後に確認すること', 'なぜうまくいくの？'];
 
 const STEP_HEADING = /^[①-⑳]\s*/;
 
@@ -72,34 +76,40 @@ function renderStep(r: Recipe, tokens: Token[]): string {
 }
 
 export function recipeSections(r: Recipe): RecipeSections {
-  const out: RecipeSections = { steps: [], others: [] };
-  for (const sec of splitByHeading(lex(r.body), 2)) {
-    switch (sec.title) {
-      case '使い方':
-        out.steps = splitByHeading(sec.tokens, 3)
-          .filter((s) => s.title)
-          .map((s, i) => {
-            const optional = /必要なら/.test(s.title);
-            const title = s.title.replace(STEP_HEADING, '').replace(/^必要なら/, '');
-            return { num: i + 1, title, optional, html: renderStep(r, s.tokens) };
-          });
-        break;
-      case '使う前に':
-        out.caution = renderTokens(sec.tokens);
-        break;
-      case '長すぎて送れないとき':
-        out.tooLong = renderTokens(sec.tokens);
-        break;
-      case '最後に確認すること':
-        out.checklist = renderTokens(sec.tokens).replace(/^<p>/, '<p class="note">');
-        break;
-      case 'なぜうまくいくの？':
-        out.why = renderTokens(sec.tokens);
-        break;
-      default:
-        if (sec.title) out.others.push({ title: sec.title, html: renderTokens(sec.tokens) });
-    }
+  const fail = (msg: string): never => {
+    throw new Error(`[content] ${r.dir}/page.md: ${msg}`);
+  };
+  const sections = splitByHeading(lex(r.body), 2).filter((s) => s.title);
+  for (const name of REQUIRED_SECTIONS) {
+    const found = sections.filter((s) => s.title === name);
+    if (found.length === 0) fail(`「## ${name}」がありません`);
+    if (found.length > 1) fail(`「## ${name}」が${found.length}回あります`);
+    if (!found[0].tokens.some((t) => t.type !== 'space')) fail(`「## ${name}」の中身がありません`);
   }
-  if (!out.steps.length) throw new Error(`[content] ${r.dir}/page.md: 「## 使い方」のSTEPがありません`);
-  return out;
+  const get = (name: string) => sections.find((s) => s.title === name)!.tokens;
+
+  const steps = splitByHeading(get('使い方'), 3)
+    .filter((s) => s.title)
+    .map((s, i) => {
+      const optional = /必要なら/.test(s.title);
+      const title = s.title.replace(STEP_HEADING, '').replace(/^必要なら/, '');
+      return { num: i + 1, title, optional, html: renderStep(r, s.tokens), hasPrompt: s.tokens.some((t) => promptLink(t)) };
+    });
+  if (!steps.length) fail('「## 使い方」に「### ①」などのSTEPがありません');
+  if (!steps.some((s) => s.hasPrompt)) fail('「## 使い方」に、プロンプト（prompts/*.txt）へのリンクがありません');
+
+  const checks = get('最後に確認すること');
+  const hasChecklist = checks.some((t) => t.type === 'list' && (t as Tokens.List).items.length > 0 && (t as Tokens.List).items.every((i) => i.task));
+  if (!hasChecklist) fail('「## 最後に確認すること」に、「- [ ] 」で始まるチェックリストがありません');
+
+  return {
+    steps: steps.map(({ hasPrompt, ...s }) => s),
+    caution: renderTokens(get('使う前に')),
+    tooLong: renderTokens(get('長すぎて送れないとき')),
+    checklist: renderTokens(checks).replace(/^<p>/, '<p class="note">'),
+    why: renderTokens(get('なぜうまくいくの？')),
+    others: sections
+      .filter((s) => !REQUIRED_SECTIONS.includes(s.title))
+      .map((s) => ({ title: s.title, html: renderTokens(s.tokens) })),
+  };
 }

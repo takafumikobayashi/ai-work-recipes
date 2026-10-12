@@ -49,6 +49,15 @@ const REQUIRED = [
 const LIST_FIELDS = ['audience', 'user_actions', 'materials', 'tested_models', 'input_types', 'output_types'];
 const MODEL_STATUSES = ['未検証', '検証中', '確認済み'];
 
+/** YYYY-MM-DD の形式で、かつ実在する日付か（2026-02-30 などを除く） */
+export function isRealDate(s: string): boolean {
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) return false;
+  const [y, mo, d] = m.slice(1).map(Number);
+  const date = new Date(Date.UTC(y, mo - 1, d));
+  return date.getUTCFullYear() === y && date.getUTCMonth() === mo - 1 && date.getUTCDate() === d;
+}
+
 function validateRecipe(file: string, data: Record<string, any>) {
   for (const key of REQUIRED) {
     if (data[key] === undefined || data[key] === null || data[key] === '') fail(file, `${key} がありません`);
@@ -64,8 +73,8 @@ function validateRecipe(file: string, data: Record<string, any>) {
   }
   // 確認済みと表示するには、確認日と確認したモデルが要る（サイトに「確認済み（日付）」と出すため）
   if (data.minimum_model_status === '確認済み') {
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(data.last_tested))) {
-      fail(file, `確認済みの場合、last_tested（${data.last_tested}）は YYYY-MM-DD の形式で書いてください`);
+    if (!isRealDate(String(data.last_tested))) {
+      fail(file, `確認済みの場合、last_tested（${data.last_tested}）は実在する日付を YYYY-MM-DD の形式で書いてください`);
     }
     if (!data.tested_models.includes(data.minimum_model)) {
       fail(file, `確認済みの場合、tested_models に minimum_model（${data.minimum_model}）を含めてください`);

@@ -28,14 +28,16 @@ npm run preview   # 出力したサイトを確認
 
 `npm run dev` は `site/` の外の素材の変更を自動では反映しない。`page.md` やプロンプトを直したときは、ページを再読み込みするか、開発サーバーを起動し直す。
 
-ビルドは素材の形式もチェックし、次の場合は失敗する（`src/lib/content.ts` の `getCategories`・`getRecipes`・`validateRecipe`・`validateGuide`）。
+ビルドは素材の形式もチェックし、次の場合は失敗する（`src/lib/content.ts` の `getCategories`・`getRecipes`・`validateRecipe`・`validateGuide`、`src/lib/recipe-view.ts` の `recipeSections`）。
 
 - `recipes/` の直下に、`categories.yml` に登録されていないフォルダがある（`template/` を除く）。`categories.yml` の `id` が重複している
 - カテゴリのフォルダの中に、`page.md` のないフォルダがある
 - `page.md` に、[recipe-spec.md](../docs/recipe-spec.md) の必須メタデータが欠けている。リストの項目が `[...]` になっていない
 - `id` とフォルダ名、`category` とカテゴリのフォルダが一致しない
 - `version` が `0.1.0` の形式でない。`difficulty` が 1〜3 でない。`minimum_model_status` が「未検証 / 検証中 / 確認済み」のいずれでもない
-- `minimum_model_status` が `確認済み` なのに、`last_tested` が `YYYY-MM-DD` の日付でない、または `tested_models` に `minimum_model` が含まれていない
+- `minimum_model_status` が `確認済み` なのに、`last_tested` が `YYYY-MM-DD` 形式の実在する日付でない（`2026-02-30` などは不可）、または `tested_models` に `minimum_model` が含まれていない
+- `page.md` の本文に、必須の見出し（使い方、長すぎて送れないとき、使う前に、最後に確認すること、なぜうまくいくの？）がない、中身が空、または2回ある
+- 「使い方」にSTEP（`### ①` など）やプロンプトへのリンクがない。「最後に確認すること」に `- [ ]` のチェックリストがない
 - `page.md` から参照したプロンプトのファイルがない
 - `guides/*.md` に `id`・`title`・`nav_group`・`order` が欠けている。`id` がファイル名と違う。`nav_group` が `top / help / about` 以外。`order` が整数でない
 
