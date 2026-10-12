@@ -93,11 +93,35 @@ export function countChars(text: string): number {
   return [...text].length;
 }
 
+// recipes/ の直下で、カテゴリではないディレクトリ
+const RESERVED_DIRS = ['template'];
+
+function subdirs(dir: string): string[] {
+  return fs.readdirSync(dir, { withFileTypes: true })
+    .filter((e) => e.isDirectory() && !e.name.startsWith('.'))
+    .map((e) => e.name)
+    .sort();
+}
+
 let categoriesCache: Category[] | undefined;
 export function getCategories(): Category[] {
-  if (!categoriesCache) {
-    categoriesCache = load(fs.readFileSync(path.join(RECIPES_DIR, 'categories.yml'), 'utf8')) as Category[];
+  if (categoriesCache) return categoriesCache;
+  const file = path.join(RECIPES_DIR, 'categories.yml');
+  const cats = load(fs.readFileSync(file, 'utf8'));
+  if (!Array.isArray(cats)) fail(file, 'カテゴリのリストになっていません');
+  const seen = new Set<string>();
+  for (const c of cats) {
+    if (!c?.id || !c?.label) fail(file, `id と label が必要です（${JSON.stringify(c)}）`);
+    if (seen.has(c.id)) fail(file, `id（${c.id}）が重複しています`);
+    seen.add(c.id);
   }
+  // categories.yml への登録を忘れたカテゴリは、レシピがサイトから黙って消えるため、ビルドを止める
+  for (const dir of subdirs(RECIPES_DIR)) {
+    if (!RESERVED_DIRS.includes(dir) && !seen.has(dir)) {
+      fail(path.join(RECIPES_DIR, dir), `カテゴリ（${dir}）が recipes/categories.yml に登録されていません`);
+    }
+  }
+  categoriesCache = cats as Category[];
   return categoriesCache;
 }
 
@@ -109,9 +133,9 @@ export function getRecipes(): Recipe[] {
   for (const cat of cats) {
     const catDir = path.join(RECIPES_DIR, cat.id);
     if (!fs.existsSync(catDir)) continue;
-    for (const name of fs.readdirSync(catDir).sort()) {
+    for (const name of subdirs(catDir)) {
       const file = path.join(catDir, name, 'page.md');
-      if (!fs.existsSync(file)) continue;
+      if (!fs.existsSync(file)) fail(path.join(catDir, name), 'page.md がありません');
       const { data, body } = readFrontmatter(file);
       validateRecipe(file, data);
       if (data.id !== name) fail(file, `id（${data.id}）とフォルダ名（${name}）が一致しません`);
@@ -139,6 +163,21 @@ export function getRecipes(): Recipe[] {
   return list;
 }
 
+// guides/README.md のフロントマターの決まり
+const NAV_GROUPS = ['top', 'help', 'about'];
+
+function validateGuide(file: string, name: string, data: Record<string, any>) {
+  for (const key of ['id', 'title', 'nav_group', 'order']) {
+    if (data[key] === undefined || data[key] === null || data[key] === '') fail(file, `${key} がありません`);
+  }
+  // URL（/guides/<id>/）が重ならないよう、ファイル名と一致させる
+  if (data.id !== name) fail(file, `id（${data.id}）とファイル名（${name}）が一致しません`);
+  if (!NAV_GROUPS.includes(data.nav_group)) {
+    fail(file, `nav_group（${data.nav_group}）は ${NAV_GROUPS.join(' / ')} のいずれかにしてください`);
+  }
+  if (!Number.isInteger(data.order)) fail(file, `order（${data.order}）は整数で書いてください`);
+}
+
 let guidesCache: Guide[] | undefined;
 export function getGuides(): Guide[] {
   if (guidesCache) return guidesCache;
@@ -147,10 +186,10 @@ export function getGuides(): Guide[] {
     .map((f) => {
       const file = path.join(GUIDES_DIR, f);
       const { data, body } = readFrontmatter(file);
-      for (const key of ['id', 'title', 'nav_group']) if (data[key] === undefined) fail(file, `${key} がありません`);
+      validateGuide(file, f.replace(/\.md$/, ''), data);
       return { id: data.id, url: `/guides/${data.id}/`, data, body };
     })
-    .sort((a, b) => (a.data.order ?? 99) - (b.data.order ?? 99));
+    .sort((a, b) => a.data.order - b.data.order);
   return guidesCache;
 }
 

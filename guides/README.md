@@ -7,6 +7,7 @@
 | [start.md](start.md) | はじめての方へ | 上部 |
 | [too-long.md](too-long.md) | 長すぎて送れないとき | 困ったとき |
 
-- 先頭のフロントマターに `id`、`title`、`nav_group`（`top` / `help` / `about`）、`order` を書く
+- 先頭のフロントマターに `id`、`title`、`nav_group`（`top` / `help` / `about`）、`order`（メニュー内の並び順。整数）を書く。すべて必須で、欠けているとサイトのビルドが失敗する
+- `id` はファイル名（`.md` を除く）と同じにする。サイトのURL（`/guides/<id>/`）になる
 - 文体は、です・ます調。短く書く
 - 特定のRecipeだけに関わる内容は、そのRecipeの `page.md` に書く。ここには、どのRecipeにも共通する内容だけを置く
