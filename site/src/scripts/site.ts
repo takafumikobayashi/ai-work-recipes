@@ -91,7 +91,8 @@ document.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach((btn) => {
     const fallback = () => {
       // メニューのボタンは本文が見えないため、レシピのページの該当プロンプトへ移動する
       if (btn.dataset.fallback) { location.href = btn.dataset.fallback; return; }
-      pre.closest('.panel')?.classList.add('open');
+      const panel = pre.closest<HTMLElement>('.panel');
+      if (panel) setExpanded(panel, true); // ボタンの表示と aria-expanded も一緒に「展開」にする
       selectText(pre);
       if (msg) msg.textContent = '全文を選択しました。Ctrl+C（Macは⌘+C）でコピーしてください。';
     };

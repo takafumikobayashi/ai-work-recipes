@@ -38,7 +38,7 @@ npm run preview   # 出力したサイトを確認
 - `minimum_model_status` が `確認済み` なのに、`last_tested` が `YYYY-MM-DD` 形式の実在する日付でない（`2026-02-30` などは不可）、または `tested_models` に `minimum_model` が含まれていない
 - `page.md` の本文に、必須の見出し（使い方、長すぎて送れないとき、使う前に、最後に確認すること、なぜうまくいくの？）がない、中身が空、または2回ある
 - 「使い方」にSTEP（`### ①` など）やプロンプトへのリンクがない。STEPの数が `user_steps` や `user_actions` の数と一致しない。「最後に確認すること」に `- [ ]` のチェックリストがない
-- `page.md` から参照したプロンプトのファイルがない
+- `page.md` から参照したプロンプトのファイルがない。`prompts/` のファイル名が `step<番号>-<名前>.txt` の形でない、中身が空、置いたSTEPの番号とファイル名の番号が違う、`page.md` から参照されていない
 - `guides/*.md` に `id`・`title`・`nav_group`・`order` が欠けている。`id` がファイル名と違う。`nav_group` が `top / help / about` 以外。`order` が整数でない
 
 ## 構成

@@ -48,7 +48,7 @@ const REQUIRED_SECTIONS = ['使い方', '長すぎて送れないとき', '使�
 const STEP_HEADING = /^[①-⑳]\s*/;
 
 /** 使い方の各STEPの本文。プロンプトへのリンクはパネルに、STEP内のコードは回答例にする */
-function renderStep(r: Recipe, tokens: Token[]): string {
+function renderStep(r: Recipe, num: number, tokens: Token[]): string {
   let afterBlock = false;
   const parts: string[] = [];
   for (const t of tokens) {
@@ -57,6 +57,8 @@ function renderStep(r: Recipe, tokens: Token[]): string {
     if (file) {
       const p = r.prompts.find((x) => x.file === file);
       if (!p) throw new Error(`[content] ${r.dir}/page.md: prompts/${file} がありません`);
+      // メニューの「STEP N をコピー」はファイル名の番号から作るため、置いたSTEPの番号と一致させる
+      if (p.step !== num) throw new Error(`[content] ${r.dir}/page.md: prompts/${file} がSTEP ${num} に置かれています。ファイル名の番号（step${p.step}）と一致させてください`);
       parts.push(`<div id="${p.name}">${panelHtml({ label: p.name, text: p.text, id: `p-${p.name}`, chars: true, collapsible: true })}</div>`);
       afterBlock = true;
     } else if (t.type === 'code') {
@@ -89,7 +91,7 @@ export function recipeSections(r: Recipe): RecipeSections {
     .map((s, i) => {
       const optional = /必要なら/.test(s.title);
       const title = s.title.replace(STEP_HEADING, '').replace(/^必要なら/, '');
-      return { num: i + 1, title, optional, html: renderStep(r, s.tokens), hasPrompt: s.tokens.some((t) => promptLink(t)) };
+      return { num: i + 1, title, optional, html: renderStep(r, i + 1, s.tokens), hasPrompt: s.tokens.some((t) => promptLink(t)) };
     });
   if (!steps.length) fail('「## 使い方」に「### ①」などのSTEPがありません');
   // カードの「操作 Nステップ」はフロントマターから、使い方の手順は本文から作るため、数がずれると表示が食い違う
@@ -100,6 +102,11 @@ export function recipeSections(r: Recipe): RecipeSections {
     fail(`user_actions（${r.data.user_actions.length}個）と「## 使い方」のSTEPの数（${steps.length}）が一致しません`);
   }
   if (!steps.some((s) => s.hasPrompt)) fail('「## 使い方」に、プロンプト（prompts/*.txt）へのリンクがありません');
+  // prompts/ のファイルはすべてメニューにコピーボタンとして出るため、使い方で参照していないものは置かない
+  const linked = new Set(get('使い方').map(promptLink).filter(Boolean));
+  for (const p of r.prompts) {
+    if (!linked.has(p.file)) fail(`prompts/${p.file} が「## 使い方」から参照されていません。使わないファイルは削除してください`);
+  }
 
   const checks = get('最後に確認すること');
   const hasChecklist = checks.some((t) => t.type === 'list' && (t as Tokens.List).items.length > 0 && (t as Tokens.List).items.every((i) => i.task));

@@ -51,6 +51,9 @@ const REQUIRED = [
   'tested_models', 'last_tested', 'input_types', 'output_types', 'confidentiality',
 ];
 const LIST_FIELDS = ['audience', 'user_actions', 'materials', 'tested_models', 'input_types', 'output_types'];
+// prompts/ のファイル名（step1-extract.txt など）
+const PROMPT_FILE = /^step([1-9]\d*)-[a-z0-9]+(?:-[a-z0-9]+)*\.txt$/;
+
 // docs/recipe-spec.md の「Recipeの状態」
 const STATUSES = ['Draft', 'Tested', 'Community-tested', 'Stable'];
 const MODEL_STATUSES = ['未検証', '検証中', '確認済み'];
@@ -159,10 +162,13 @@ export function getRecipes(): Recipe[] {
       if (data.category !== cat.id) fail(file, `category（${data.category}）とフォルダ（${cat.id}）が一致しません`);
       const promptDir = path.join(catDir, name, 'prompts');
       const prompts: Prompt[] = fs.existsSync(promptDir)
-        ? fs.readdirSync(promptDir).filter((f) => f.endsWith('.txt')).sort().map((f) => {
+        ? fs.readdirSync(promptDir).filter((f) => !f.startsWith('.')).sort().map((f) => {
+            // メニューの「STEP N をコピー」はファイル名の番号から作るため、名前の形を決めておく
+            const m = f.match(PROMPT_FILE);
+            if (!m) fail(path.join(promptDir, f), 'プロンプトのファイル名は step<番号>-<英小文字・数字・ハイフン>.txt にしてください（例：step1-extract.txt）');
             const text = fs.readFileSync(path.join(promptDir, f), 'utf8').replace(/\s+$/, '');
-            const step = Number(f.match(/^step(\d+)/)?.[1] ?? 0);
-            return { file: f, name: f.replace(/\.txt$/, ''), step, text, chars: countChars(text) };
+            if (!text) fail(path.join(promptDir, f), 'プロンプトが空です');
+            return { file: f, name: f.replace(/\.txt$/, ''), step: Number(m[1]), text, chars: countChars(text) };
           })
         : [];
       list.push({
