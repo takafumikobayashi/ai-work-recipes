@@ -41,6 +41,7 @@ docs/
   design-principles.md   # Recipeを設計・レビューする原則
   prompt-patterns.md     # プロンプト設計パターン（P1〜P10）
   distribution.md        # Webサイト・GitHub・noteでの公開方針
+  feedback-form.md       # ご意見フォームの設計
   site-design.md         # Webサイトの見せ方の基準
   mock/site-mock.html    # Webサイトのモック
   evaluation.md          # 評価項目とテスト方針
