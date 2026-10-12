@@ -272,6 +272,7 @@ code { font-family: var(--f-mono); font-size: .92em; background: var(--surface-2
 .caution > :first-child { margin-top: 0; }
 .step-body > p:first-of-type { margin-top: 6px; }
 .panel pre:focus { outline: none; }
+.feedback { margin-top: 32px; font-size: 14px; color: var(--muted); }
 .foot a { color: var(--muted); }
 .foot a:hover { color: var(--accent); }
 .skip { position: absolute; left: -9999px; }

@@ -21,6 +21,16 @@ export function modelStatus(r: Recipe): { label: string; verified: boolean } {
   return { label: `${r.data.minimum_model} ${status}`, verified: status === '確認済み' };
 }
 
+/** レシピ名を入れた状態で開く、ご意見フォームのURL。フォームが未設定なら undefined */
+export function feedbackUrl(r: Recipe): string | undefined {
+  if (!SITE.feedbackUrl) return undefined;
+  if (!SITE.feedbackRecipeEntry) return SITE.feedbackUrl;
+  const url = new URL(SITE.feedbackUrl);
+  url.searchParams.set('usp', 'pp_url');
+  url.searchParams.set(SITE.feedbackRecipeEntry, String(r.data.title));
+  return url.href;
+}
+
 export function githubUrl(r: Recipe): string {
   return `${SITE.github}/tree/${SITE.githubBranch}/${r.dir}`;
 }

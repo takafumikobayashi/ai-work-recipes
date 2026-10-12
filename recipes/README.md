@@ -23,6 +23,9 @@ recipes/
 |---|---|---|
 | meeting | [文字起こしから議事録を作る](meeting/minutes-from-transcript/) | Draft |
 | reading | [ガイドラインから、やるべきことを整理する](reading/guideline-to-actions/) | Draft |
+| reading | [利用規約・約款から、確認すべき条項を整理する](reading/terms-to-checkpoints/) | Draft |
+| writing | [メモからお知らせ文を作る](writing/notice-from-memo/) | Draft |
+| organize | [アンケートや問い合わせを分類して一覧にする](organize/classify-comments/) | Draft |
 
 ## 状態
 

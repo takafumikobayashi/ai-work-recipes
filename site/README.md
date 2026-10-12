@@ -81,4 +81,5 @@ GitHubリポジトリと連携し、次のとおり設定する。
 - Node.js のバージョンは `site/.node-version` で指定している
 - 公開前は、プレビューURL（`*.pages.dev`）を Cloudflare Access で制限する
 - 独自ドメインは、Cloudflare Pages の「Custom domains」で `ai-work-recipes.tariki-code.tokyo` を追加し、Netlify DNS に `<project>.pages.dev` 宛ての CNAME レコードを追加する
-- β公開のときに `src/site.config.ts` の `noindex` を `false` にし、`feedbackUrl` を設定する
+- β公開のときに `src/site.config.ts` の `noindex` を `false` にする
+- ご意見フォームを作ったら、`src/site.config.ts` の `feedbackUrl` と `feedbackRecipeEntry` を設定する（手順は [docs/feedback-form.md](../docs/feedback-form.md)）

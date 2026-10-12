@@ -75,8 +75,8 @@ const searchText = (r: (typeof recipes)[number]) =>
     {about.map((g) => <li><a class="nav-link" href={g.url} {...cur(g.url)}>{g.data.title}</a></li>)}
     <li>
       {SITE.feedbackUrl
-        ? <a class="nav-link" href={SITE.feedbackUrl} target="_blank" rel="noopener">ご意見フォーム<span aria-hidden="true">↗</span></a>
-        : <span class="nav-soon"><span>ご意見フォーム</span><span>準備中</span></span>}
+        ? <a class="nav-link" href={SITE.feedbackUrl} target="_blank" rel="noopener">ご意見・レシピの要望<span aria-hidden="true">↗</span></a>
+        : <span class="nav-soon"><span>ご意見・レシピの要望</span><span>準備中</span></span>}
     </li>
     <li><a class="nav-link" href={SITE.github} target="_blank" rel="noopener">技術者の方へ（GitHub）<span aria-hidden="true">↗</span></a></li>
   </ul>

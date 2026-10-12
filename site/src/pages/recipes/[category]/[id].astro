@@ -2,7 +2,7 @@
 import Base from '../../../layouts/Base.astro';
 import Stars from '../../../components/Stars.astro';
 import { getRecipes } from '../../../lib/content';
-import { eyebrow, timeParts, modelStatus, githubUrl, recipeSections } from '../../../lib/recipe-view';
+import { eyebrow, timeParts, modelStatus, githubUrl, feedbackUrl, recipeSections } from '../../../lib/recipe-view';
 
 export function getStaticPaths() {
   return getRecipes().map((recipe) => ({ params: { category: recipe.category, id: recipe.id } }));
@@ -19,6 +19,7 @@ const model = modelStatus(r);
 const sec = recipeSections(r);
 // 「必要なら」のSTEPを除いた数。質問がないときの操作数として表示する
 const requiredSteps = sec.steps.filter((s) => !s.optional).length;
+const feedback = feedbackUrl(r);
 const ai = d.ai_knowledge === '不要' ? 'AIの知識は不要' : `AIの知識：${d.ai_knowledge}`;
 ---
 <Base title={d.title} description={d.summary} category={r.category}>
@@ -74,6 +75,12 @@ const ai = d.ai_knowledge === '不要' ? 'AIの知識は不要' : `AIの知識�
       <summary>なぜこのプロンプトでうまくいくの？</summary>
       <div class="box-body prose"><Fragment set:html={sec.why} /></div>
     </details>
+  )}
+
+  {feedback && (
+    <p class="feedback">
+      使ってみて、うまくいかなかったことや気づいたこと、ほかにあったら良いレシピがあれば、<a href={feedback} target="_blank" rel="noopener">ご意見フォーム</a>からお知らせください。資料やAIの出力の中身は書かないでください。
+    </p>
   )}
 
   <p class="foot">
