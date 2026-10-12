@@ -16,10 +16,6 @@ export function timeParts(r: Recipe): { main: string; sub?: string } {
   return { main: m[1], sub: m[2] === '目標' ? '目標・未実測' : m[2] };
 }
 
-export function hasOptionalStep(r: Recipe): boolean {
-  return (r.data.user_actions ?? []).some((a: string) => /答える|選ぶ/.test(a));
-}
-
 export function modelStatus(r: Recipe): { label: string; verified: boolean } {
   const status = String(r.data.minimum_model_status);
   return { label: `${r.data.minimum_model} ${status}`, verified: status === '確認済み' };
@@ -96,6 +92,13 @@ export function recipeSections(r: Recipe): RecipeSections {
       return { num: i + 1, title, optional, html: renderStep(r, s.tokens), hasPrompt: s.tokens.some((t) => promptLink(t)) };
     });
   if (!steps.length) fail('「## 使い方」に「### ①」などのSTEPがありません');
+  // カードの「操作 Nステップ」はフロントマターから、使い方の手順は本文から作るため、数がずれると表示が食い違う
+  if (steps.length !== r.data.user_steps) {
+    fail(`user_steps（${r.data.user_steps}）と「## 使い方」のSTEPの数（${steps.length}）が一致しません`);
+  }
+  if (r.data.user_actions.length !== steps.length) {
+    fail(`user_actions（${r.data.user_actions.length}個）と「## 使い方」のSTEPの数（${steps.length}）が一致しません`);
+  }
   if (!steps.some((s) => s.hasPrompt)) fail('「## 使い方」に、プロンプト（prompts/*.txt）へのリンクがありません');
 
   const checks = get('最後に確認すること');

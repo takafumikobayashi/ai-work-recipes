@@ -2,7 +2,7 @@
 // 素材の形式は docs/recipe-spec.md と guides/README.md に従う。形式に合わない素材はビルドを止める。
 import fs from 'node:fs';
 import path from 'node:path';
-import { load } from 'js-yaml';
+import { load as loadYaml, CORE_SCHEMA } from 'js-yaml';
 import { Marked, Renderer, type Token, type Tokens } from 'marked';
 
 // `astro build` / `astro dev` は site/ で実行する前提
@@ -82,6 +82,12 @@ function validateRecipe(file: string, data: Record<string, any>) {
   }
 }
 
+// YAMLは CORE_SCHEMA で読む。日付（2026-10-12）を Date に変換させず、書かれた文字列のまま検証するため。
+// Date に変換されると 2026-02-30 が 3月2日 に繰り上がり、実在しない日付のチェックをすり抜ける
+function load(src: string): unknown {
+  return loadYaml(src, { schema: CORE_SCHEMA });
+}
+
 function fail(file: string, msg: string): never {
   throw new Error(`[content] ${path.relative(ROOT, file)}: ${msg}`);
 }
@@ -90,12 +96,7 @@ function readFrontmatter(file: string): { data: Record<string, any>; body: strin
   const src = fs.readFileSync(file, 'utf8');
   const m = src.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
   if (!m) fail(file, 'フロントマターがありません');
-  const data = (load(m[1]) as Record<string, any>) ?? {};
-  // YAMLの読み込み方によっては、引用符のない日付（2026-10-12）が Date になる。表示と検証のため YYYY-MM-DD に戻す
-  for (const [key, value] of Object.entries(data)) {
-    if (value instanceof Date) data[key] = value.toISOString().slice(0, 10);
-  }
-  return { data, body: m[2] };
+  return { data: (load(m[1]) as Record<string, any>) ?? {}, body: m[2] };
 }
 
 export function countChars(text: string): number {

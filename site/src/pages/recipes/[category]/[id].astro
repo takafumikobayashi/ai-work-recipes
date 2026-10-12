@@ -2,7 +2,7 @@
 import Base from '../../../layouts/Base.astro';
 import Stars from '../../../components/Stars.astro';
 import { getRecipes, type Recipe } from '../../../lib/content';
-import { eyebrow, timeParts, modelStatus, hasOptionalStep, githubUrl, recipeSections } from '../../../lib/recipe-view';
+import { eyebrow, timeParts, modelStatus, githubUrl, recipeSections } from '../../../lib/recipe-view';
 
 export function getStaticPaths() {
   return getRecipes().map((recipe) => ({ params: { category: recipe.category, id: recipe.id }, props: { recipe } }));
@@ -14,6 +14,8 @@ const d = r.data;
 const time = timeParts(r);
 const model = modelStatus(r);
 const sec = recipeSections(r);
+// 「必要なら」のSTEPを除いた数。質問がないときの操作数として表示する
+const requiredSteps = sec.steps.filter((s) => !s.optional).length;
 const ai = d.ai_knowledge === '不要' ? 'AIの知識は不要' : `AIの知識：${d.ai_knowledge}`;
 ---
 <Base title={d.title} description={d.summary} category={r.category}>
@@ -24,7 +26,7 @@ const ai = d.ai_knowledge === '不要' ? 'AIの知識は不要' : `AIの知識�
   <dl class="spec">
     <div><dt>TIME</dt><dd>{time.main}{time.sub && <span class="sub">{time.sub}</span>}</dd></div>
     <div><dt>LEVEL</dt><dd><Stars level={d.difficulty} /><span class="sub">{ai}</span></dd></div>
-    <div><dt>STEPS</dt><dd>{d.user_steps}ステップ{hasOptionalStep(r) && <span class="sub">質問がなければ{d.user_steps - 1}</span>}</dd></div>
+    <div><dt>STEPS</dt><dd>{d.user_steps}ステップ{requiredSteps < sec.steps.length && <span class="sub">質問がなければ{requiredSteps}</span>}</dd></div>
     <div><dt>MIN. MODEL</dt><dd>{d.minimum_model}<span class="sub">{model.verified ? `確認済み（${d.last_tested}）` : d.minimum_model_status}</span></dd></div>
   </dl>
   {d.materials?.length > 0 && <p class="material">用意するもの：{d.materials.join('、')}</p>}
