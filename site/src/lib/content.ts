@@ -47,6 +47,8 @@ const REQUIRED = [
   'tested_models', 'last_tested', 'input_types', 'output_types', 'confidentiality',
 ];
 const LIST_FIELDS = ['audience', 'user_actions', 'materials', 'tested_models', 'input_types', 'output_types'];
+// docs/recipe-spec.md の「Recipeの状態」
+const STATUSES = ['Draft', 'Tested', 'Community-tested', 'Stable'];
 const MODEL_STATUSES = ['未検証', '検証中', '確認済み'];
 
 /** YYYY-MM-DD の形式で、かつ実在する日付か（2026-02-30 などを除く） */
@@ -66,6 +68,7 @@ function validateRecipe(file: string, data: Record<string, any>) {
   if (typeof data.version !== 'string' || !/^\d+\.\d+\.\d+$/.test(data.version)) {
     fail(file, `version（${data.version}）は 0.1.0 の形式で書いてください`);
   }
+  if (!STATUSES.includes(data.status)) fail(file, `status（${data.status}）は ${STATUSES.join(' / ')} のいずれかにしてください`);
   if (![1, 2, 3].includes(data.difficulty)) fail(file, `difficulty（${data.difficulty}）は 1〜3 で書いてください`);
   if (!Number.isInteger(data.user_steps) || data.user_steps < 1) fail(file, `user_steps（${data.user_steps}）は 1 以上の整数で書いてください`);
   if (!MODEL_STATUSES.includes(data.minimum_model_status)) {
