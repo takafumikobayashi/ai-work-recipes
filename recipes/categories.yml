@@ -1,5 +1,5 @@
 # 業務カテゴリの一覧。サイトの「業務から探す」の表示名と並び順に使う。
-# フォルダ名（recipes/<category>/）と id を一致させる。
+# フォルダ名（recipes/<category>/）と id を一致させる。id は英小文字・数字・ハイフンで書く（サイトのURLになる）。
 - id: meeting
   label: 会議
 - id: writing

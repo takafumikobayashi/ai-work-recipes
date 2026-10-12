@@ -36,7 +36,7 @@ guides/                            # 利用者向け：サイト共通ページ�
 
 - フォルダは `recipes/<category>/<name>/` とする。フォルダの場所はそのままサイトのURL（例：`recipes/meeting/minutes-from-transcript/` → `/recipes/meeting/minutes-from-transcript/`）になるため、公開後は原則として変えない。URLの先頭の `/recipes/` は、サイト共通ページ（`/guides/<id>/`）とURLが重ならないように付けている
 - `category` は [../recipes/categories.yml](../recipes/categories.yml) から選ぶ。増やすときは既存のカテゴリと重ならないか確認し、`categories.yml` に表示名を追加する
-- `name` は英小文字とハイフンで、何から何を作るかが分かる名前にする
+- `name` は英小文字・数字・ハイフンで、何から何を作るかが分かる名前にする（例：`minutes-from-transcript`）。`category` も同じ形式にする。どちらもサイトのURLになるため、形式に合わないとビルドが失敗する
 - プロンプトは `page.md` に埋め込まず、`prompts/` 配下に **プロンプト本文だけ** を置く。`page.md` からはリンクし、サイトではそのリンクをプロンプトとコピーボタンに置き換える
 - ファイル名は `step<番号>-<動作>.txt`（動作は英小文字・数字・ハイフン。例：`step1-extract.txt`）とし、番号は `page.md` でそのプロンプトを置くSTEPの番号と一致させる。サイトのメニューの「STEP N をコピー」は、この番号から作る。`page.md` から参照しないファイルは `prompts/` に置かない
 - ファイル名の番号は、利用者の操作ステップに合わせる。人が答えるだけのステップ（STEP 2）にはプロンプトファイルを作らない

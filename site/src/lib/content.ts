@@ -51,6 +51,9 @@ const REQUIRED = [
   'tested_models', 'last_tested', 'input_types', 'output_types', 'confidentiality',
 ];
 const LIST_FIELDS = ['audience', 'user_actions', 'materials', 'tested_models', 'input_types', 'output_types'];
+// URLに使う名前（カテゴリのID、レシピ名、ガイドのID）。# や ? などが入るとページにたどり着けなくなるため
+const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
 // prompts/ のファイル名（step1-extract.txt など）
 const PROMPT_FILE = /^step([1-9]\d*)-[a-z0-9]+(?:-[a-z0-9]+)*\.txt$/;
 
@@ -132,6 +135,7 @@ export function getCategories(): Category[] {
   const seen = new Set<string>();
   for (const c of cats) {
     if (!c?.id || !c?.label) fail(file, `id と label が必要です（${JSON.stringify(c)}）`);
+    if (!SLUG.test(String(c.id))) fail(file, `id（${c.id}）は英小文字・数字・ハイフンで書いてください`);
     if (seen.has(c.id)) fail(file, `id（${c.id}）が重複しています`);
     seen.add(c.id);
   }
@@ -155,6 +159,7 @@ export function getRecipes(): Recipe[] {
     if (!fs.existsSync(catDir)) continue;
     for (const name of subdirs(catDir)) {
       const file = path.join(catDir, name, 'page.md');
+      if (!SLUG.test(name)) fail(path.join(catDir, name), `フォルダ名（${name}）は英小文字・数字・ハイフンにしてください。サイトのURLになります`);
       if (!fs.existsSync(file)) fail(path.join(catDir, name), 'page.md がありません');
       const { data, body } = readFrontmatter(file);
       validateRecipe(file, data);
@@ -194,6 +199,7 @@ function validateGuide(file: string, name: string, data: Record<string, any>) {
     if (data[key] === undefined || data[key] === null || data[key] === '') fail(file, `${key} がありません`);
   }
   // URL（/guides/<id>/）が重ならないよう、ファイル名と一致させる
+  if (!SLUG.test(name)) fail(file, `ファイル名（${name}.md）は英小文字・数字・ハイフンにしてください。サイトのURLになります`);
   if (data.id !== name) fail(file, `id（${data.id}）とファイル名（${name}）が一致しません`);
   if (!NAV_GROUPS.includes(data.nav_group)) {
     fail(file, `nav_group（${data.nav_group}）は ${NAV_GROUPS.join(' / ')} のいずれかにしてください`);

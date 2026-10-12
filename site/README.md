@@ -33,7 +33,7 @@ npm run preview   # 出力したサイトを確認
 - `recipes/` の直下に、`categories.yml` に登録されていないフォルダがある（`template/` を除く）。`categories.yml` の `id` が重複している
 - カテゴリのフォルダの中に、`page.md` のないフォルダがある
 - `page.md` に、[recipe-spec.md](../docs/recipe-spec.md) の必須メタデータが欠けている。リストの項目が `[...]` になっていない
-- `id` とフォルダ名、`category` とカテゴリのフォルダが一致しない
+- `id` とフォルダ名、`category` とカテゴリのフォルダが一致しない。レシピのフォルダ名、カテゴリのID、ガイドのファイル名が英小文字・数字・ハイフンの形でない（URLになるため）
 - `version` が `0.1.0` の形式でない。`status` が `Draft / Tested / Community-tested / Stable` 以外。`difficulty` が 1〜3 でない。`minimum_model_status` が「未検証 / 検証中 / 確認済み」のいずれでもない
 - `minimum_model_status` が `確認済み` なのに、`last_tested` が `YYYY-MM-DD` 形式の実在する日付でない（`2026-02-30` などは不可）、または `tested_models` に `minimum_model` が含まれていない
 - `page.md` の本文に、必須の見出し（使い方、長すぎて送れないとき、使う前に、最後に確認すること、なぜうまくいくの？）がない、中身が空、または2回ある
