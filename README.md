@@ -59,8 +59,24 @@ recipes/
       evals/                     # テストセットと評価結果
   reading/
     guideline-to-actions/        # ガイドラインから、やるべきことを整理する
+  writing/
+    notice-from-memo/            # メモからお知らせ文を作る
+  organize/
+    classify-comments/           # アンケートや問い合わせを分類して一覧にする
 site/                            # Webサイト（Astro）。recipes/ と guides/ から生成する
 ```
+
+## サイトを手元で確認する
+
+Webサイトは `site/` にあります（Astro）。`package.json` は `site/` の中にあるため、`site/` に移動してから実行します。Node.js 22.19.0 以上が必要です。
+
+```sh
+cd site
+npm install      # 初回と、パッケージが変わったときだけ
+npm run dev      # http://localhost:4321 で確認
+```
+
+`recipes/` や `guides/` を編集して保存すると、ブラウザが自動で再読み込みされます。詳しくは [site/README.md](site/README.md) を参照してください。
 
 ## 公開方針
 
