@@ -13,7 +13,11 @@ function load(k: string): string | null {
 }
 
 /* メニュー：PCは折りたたみ（状態を保存）、スマートフォンは引き出し */
+// 引き出しを開いている間、背景（本文と「本文へ移動」）はキーボードや読み上げでも操作できないようにする。
+// 背景は暗い幕でマウス・タッチ操作を受け付けないため、キーボードだけ操作できる状態を作らない
+const background = [document.getElementById('main'), document.querySelector('.skip')].filter((el): el is HTMLElement => !!el);
 function setNav(open: boolean) {
+  background.forEach((el) => { el.inert = mq.matches && open; });
   if (mq.matches) {
     root.classList.toggle('nav-open', open);
     root.classList.remove('nav-closed');
