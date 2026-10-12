@@ -68,6 +68,7 @@ q?.addEventListener('input', () => {
 });
 
 /* コピー：使えない環境では全文を選択して Ctrl+C を案内する */
+const COPY_BY_HAND = '全文を選択しました。Ctrl+C（Macは⌘+C）でコピーしてください。';
 function selectText(el: HTMLElement) {
   const r = document.createRange();
   r.selectNodeContents(el);
@@ -89,12 +90,20 @@ document.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach((btn) => {
       setTimeout(() => { btn.classList.remove('done'); label.textContent = original; }, 2200);
     };
     const fallback = () => {
-      // メニューのボタンは本文が見えないため、レシピのページの該当プロンプトへ移動する
-      if (btn.dataset.fallback) { location.href = btn.dataset.fallback; return; }
+      // メニューのボタンは本文が見えないため、レシピのページの該当プロンプトを開いて選択する
+      if (btn.dataset.fallback) {
+        const url = new URL(btn.dataset.fallback, location.href);
+        if (url.pathname !== location.pathname) { location.href = url.href; return; }
+        // 表示中のレシピなら、ページを移動せずにその場で開く（同じページへのハッシュ移動では再読み込みされないため）
+        if (mq.matches) setNav(false);
+        history.replaceState(null, '', url.hash);
+        revealPrompt(decodeURIComponent(url.hash.slice(1)));
+        return;
+      }
       const panel = pre.closest<HTMLElement>('.panel');
       if (panel) setExpanded(panel, true); // ボタンの表示と aria-expanded も一緒に「展開」にする
       selectText(pre);
-      if (msg) msg.textContent = '全文を選択しました。Ctrl+C（Macは⌘+C）でコピーしてください。';
+      if (msg) msg.textContent = COPY_BY_HAND;
     };
     try {
       navigator.clipboard.writeText(pre.textContent ?? '').then(ok, fallback);
@@ -119,16 +128,21 @@ document.querySelectorAll<HTMLButtonElement>('.expand').forEach((btn) => {
     setExpanded(panel, !panel.classList.contains('open'));
   });
 });
-// メニューのコピーから移動してきたときは、そのプロンプトを開いて選択しておく
-if (location.hash) {
-  const target = document.getElementById(decodeURIComponent(location.hash.slice(1)));
+/** プロンプト（id は step1-extract など、パネルを囲む要素のID）を開いて全文を選択し、手でコピーするよう案内する */
+function revealPrompt(id: string) {
+  const target = document.getElementById(id);
   const panel = target?.querySelector<HTMLElement>('.panel');
-  if (panel) {
-    setExpanded(panel, true);
-    const pre = panel.querySelector('pre');
-    if (pre) selectText(pre);
-  }
+  const pre = panel?.querySelector('pre');
+  // 見出しなど、プロンプト以外への移動（#長すぎて送れないとき など）では何もしない
+  if (!target || !panel || !pre || pre.id !== `p-${id}`) return;
+  setExpanded(panel, true);
+  target.scrollIntoView({ block: 'start' });
+  selectText(pre);
+  const msg = document.querySelector<HTMLElement>(`[data-msg="${pre.id}"]`);
+  if (msg) msg.textContent = COPY_BY_HAND;
 }
+// メニューのコピーに失敗して別のページから移動してきたときも、そのプロンプトを開いて選択しておく
+if (location.hash) revealPrompt(decodeURIComponent(location.hash.slice(1)));
 
 /* チェックリストの進み具合 */
 document.querySelectorAll<HTMLElement>('.check-block').forEach((block) => {

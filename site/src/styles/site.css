@@ -276,4 +276,4 @@ code { font-family: var(--f-mono); font-size: .92em; background: var(--surface-2
 .foot a:hover { color: var(--accent); }
 .skip { position: absolute; left: -9999px; }
 .skip:focus { left: 16px; top: 8px; z-index: 40; background: var(--surface); padding: 6px 12px; border-radius: 6px; }
-h2[id], h3[id] { scroll-margin-top: calc(var(--top-h) + 16px); }
+h2[id], h3[id], .prompt-anchor { scroll-margin-top: calc(var(--top-h) + 16px); }

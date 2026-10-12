@@ -59,7 +59,7 @@ function renderStep(r: Recipe, num: number, tokens: Token[]): string {
       if (!p) throw new Error(`[content] ${r.dir}/page.md: prompts/${file} がありません`);
       // メニューの「STEP N をコピー」はファイル名の番号から作るため、置いたSTEPの番号と一致させる
       if (p.step !== num) throw new Error(`[content] ${r.dir}/page.md: prompts/${file} がSTEP ${num} に置かれています。ファイル名の番号（step${p.step}）と一致させてください`);
-      parts.push(`<div id="${p.name}">${panelHtml({ label: p.name, text: p.text, id: `p-${p.name}`, chars: true, collapsible: true })}</div>`);
+      parts.push(`<div class="prompt-anchor" id="${p.name}">${panelHtml({ label: p.name, text: p.text, id: `p-${p.name}`, chars: true, collapsible: true })}</div>`);
       afterBlock = true;
     } else if (t.type === 'code') {
       parts.push(`<div class="answer">${escapeHtml((t as Tokens.Code).text)}</div>`);
