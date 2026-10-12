@@ -18,6 +18,8 @@ const help = guides.filter((g) => g.data.nav_group === 'help');
 const about = guides.filter((g) => g.data.nav_group === 'about');
 const anchor = (g: typeof start, heading: string) => (g ? `${g.url}#${encodeURIComponent(headingId(heading))}` : undefined);
 const cur = (url: string) => (url === current ? { 'aria-current': 'page' as const } : {});
+// メニューは全ページ共通なので、カテゴリが違えば同じ名前のレシピがあっても重ならないIDにする
+const copyId = (r: (typeof recipes)[number], p: (typeof recipes)[number]['prompts'][number]) => `q-${r.category}-${r.id}-${p.name}`;
 const searchText = (r: (typeof recipes)[number]) =>
   [r.data.title, r.data.summary, categoryLabel(r.category), ...(r.data.input_types ?? []), ...(r.data.output_types ?? [])].join(' ');
 ---
@@ -47,11 +49,11 @@ const searchText = (r: (typeof recipes)[number]) =>
               {r.prompts.length > 0 && (
                 <div class="quick" role="group" aria-label={`${r.data.title}のプロンプトをすぐコピー`}>
                   {r.prompts.map((p) => (
-                    <button class="qcopy" type="button" data-copy={`q-${r.id}-${p.name}`} data-fallback={`${r.url}#${p.name}`}>
+                    <button class="qcopy" type="button" data-copy={copyId(r, p)} data-fallback={`${r.url}#${p.name}`}>
                       <span>STEP {p.step} をコピー</span><span class="k">{p.chars.toLocaleString('ja-JP')}字</span>
                     </button>
                   ))}
-                  {r.prompts.map((p) => <pre hidden id={`q-${r.id}-${p.name}`}>{p.text}</pre>)}
+                  {r.prompts.map((p) => <pre hidden id={copyId(r, p)}>{p.text}</pre>)}
                 </div>
               )}
             </li>

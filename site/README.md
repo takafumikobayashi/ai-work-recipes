@@ -8,7 +8,7 @@
 |---|---|
 | `recipes/categories.yml` | メニューの「業務から探す」の並び順と表示名 |
 | `recipes/<category>/<id>/page.md` のフロントマター | 一覧のカード、Recipeページ冒頭のカード |
-| `recipes/<category>/<id>/page.md` の本文 | Recipeページ（使い方、長すぎて送れないとき、使う前に、最後に確認すること、なぜうまくいくの？） |
+| `recipes/<category>/<id>/page.md` の本文 | Recipeページ `/recipes/<category>/<id>/`（使い方、長すぎて送れないとき、使う前に、最後に確認すること、なぜうまくいくの？） |
 | `recipes/<category>/<id>/prompts/*.txt` | コピー用のプロンプトと文字数、メニューのコピーボタン |
 | `guides/*.md` | サイト共通ページ（`/guides/<id>/`） |
 
@@ -28,7 +28,13 @@ npm run preview   # 出力したサイトを確認
 
 `npm run dev` は `site/` の外の素材の変更を自動では反映しない。`page.md` やプロンプトを直したときは、ページを再読み込みするか、開発サーバーを起動し直す。
 
-ビルドは素材の形式もチェックする。`page.md` の必須項目が欠けている、`id` とフォルダ名が違う、`page.md` から参照したプロンプトのファイルがない、といった場合はビルドが失敗する。
+ビルドは素材の形式もチェックし、次の場合は失敗する（`src/lib/content.ts` の `validateRecipe`）。
+
+- `page.md` に、[recipe-spec.md](../docs/recipe-spec.md) の必須メタデータが欠けている。リストの項目が `[...]` になっていない
+- `id` とフォルダ名、`category` とカテゴリのフォルダが一致しない
+- `version` が `0.1.0` の形式でない。`difficulty` が 1〜3 でない。`minimum_model_status` が「未検証 / 検証中 / 確認済み」のいずれでもない
+- `minimum_model_status` が `確認済み` なのに、`last_tested` が `YYYY-MM-DD` の日付でない、または `tested_models` に `minimum_model` が含まれていない
+- `page.md` から参照したプロンプトのファイルがない
 
 ## 構成
 

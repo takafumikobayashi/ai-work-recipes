@@ -6,8 +6,8 @@
 
 ```text
 recipes/
-  <category>/              # 業務カテゴリ（meeting, writing, summary など）
-    <name>/                # Recipe。フォルダの場所がサイトのURLになる
+  <category>/              # 業務カテゴリ（meeting, reading など。categories.yml の id）
+    <name>/                # Recipe。フォルダの場所がサイトのURL（/recipes/<category>/<name>/）になる
       page.md              # サイト表示の素材：カード情報（フロントマター）、使い方、注意、最後の確認
       prompts/             # コピー用プロンプト（本文のみ）
       README.md            # 設計と検証：なぜこの形か、限界、評価、改訂履歴

@@ -16,7 +16,7 @@
 ```text
 recipes/
   meeting/                         # 業務カテゴリ（例：meeting、reading）
-    minutes-from-transcript/       # Recipe（フォルダ名がサイトのURLになる）
+    minutes-from-transcript/       # Recipe（フォルダの場所がサイトのURLになる）
       page.md                      # 利用者向け：サイト表示の素材（カード・使い方・注意・最後の確認）
       prompts/
         step1-<動作>.txt           # 利用者向け：コピーボタンの中身（プロンプト本文のみ）
@@ -34,7 +34,7 @@ guides/                            # 利用者向け：サイト共通ページ�
 | `README.md` | 技術者・改善したい人 | GitHub | である調 |
 | `evals/` | 技術者・改善したい人 | GitHub | — |
 
-- フォルダは `recipes/<category>/<name>/` とする。フォルダの場所はサイトのURL（例：`/meeting/minutes-from-transcript/`）になるため、公開後は原則として変えない
+- フォルダは `recipes/<category>/<name>/` とする。フォルダの場所はそのままサイトのURL（例：`recipes/meeting/minutes-from-transcript/` → `/recipes/meeting/minutes-from-transcript/`）になるため、公開後は原則として変えない。URLの先頭の `/recipes/` は、サイト共通ページ（`/guides/<id>/`）とURLが重ならないように付けている
 - `category` は [../recipes/categories.yml](../recipes/categories.yml) から選ぶ。増やすときは既存のカテゴリと重ならないか確認し、`categories.yml` に表示名を追加する
 - `name` は英小文字とハイフンで、何から何を作るかが分かる名前にする
 - プロンプトは `page.md` に埋め込まず、`prompts/` 配下に **プロンプト本文だけ** を置く。`page.md` からはリンクし、サイトではそのリンクをプロンプトとコピーボタンに置き換える

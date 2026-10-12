@@ -40,10 +40,38 @@ export interface Guide {
   body: string;
 }
 
+// docs/recipe-spec.md の「必須メタデータ」。サイトに表示する値は、形式もここで確かめる
 const REQUIRED = [
-  'id', 'title', 'summary', 'category', 'status', 'version', 'difficulty', 'user_steps',
+  'id', 'title', 'summary', 'category', 'status', 'version', 'audience', 'difficulty', 'user_steps',
   'user_actions', 'ai_knowledge', 'estimated_time', 'materials', 'minimum_model', 'minimum_model_status',
+  'tested_models', 'last_tested', 'input_types', 'output_types', 'confidentiality',
 ];
+const LIST_FIELDS = ['audience', 'user_actions', 'materials', 'tested_models', 'input_types', 'output_types'];
+const MODEL_STATUSES = ['未検証', '検証中', '確認済み'];
+
+function validateRecipe(file: string, data: Record<string, any>) {
+  for (const key of REQUIRED) {
+    if (data[key] === undefined || data[key] === null || data[key] === '') fail(file, `${key} がありません`);
+  }
+  for (const key of LIST_FIELDS) if (!Array.isArray(data[key])) fail(file, `${key} はリスト（[...]）で書いてください`);
+  if (typeof data.version !== 'string' || !/^\d+\.\d+\.\d+$/.test(data.version)) {
+    fail(file, `version（${data.version}）は 0.1.0 の形式で書いてください`);
+  }
+  if (![1, 2, 3].includes(data.difficulty)) fail(file, `difficulty（${data.difficulty}）は 1〜3 で書いてください`);
+  if (!Number.isInteger(data.user_steps) || data.user_steps < 1) fail(file, `user_steps（${data.user_steps}）は 1 以上の整数で書いてください`);
+  if (!MODEL_STATUSES.includes(data.minimum_model_status)) {
+    fail(file, `minimum_model_status（${data.minimum_model_status}）は ${MODEL_STATUSES.join(' / ')} のいずれかにしてください`);
+  }
+  // 確認済みと表示するには、確認日と確認したモデルが要る（サイトに「確認済み（日付）」と出すため）
+  if (data.minimum_model_status === '確認済み') {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(data.last_tested))) {
+      fail(file, `確認済みの場合、last_tested（${data.last_tested}）は YYYY-MM-DD の形式で書いてください`);
+    }
+    if (!data.tested_models.includes(data.minimum_model)) {
+      fail(file, `確認済みの場合、tested_models に minimum_model（${data.minimum_model}）を含めてください`);
+    }
+  }
+}
 
 function fail(file: string, msg: string): never {
   throw new Error(`[content] ${path.relative(ROOT, file)}: ${msg}`);
@@ -80,7 +108,7 @@ export function getRecipes(): Recipe[] {
       const file = path.join(catDir, name, 'page.md');
       if (!fs.existsSync(file)) continue;
       const { data, body } = readFrontmatter(file);
-      for (const key of REQUIRED) if (data[key] === undefined) fail(file, `${key} がありません`);
+      validateRecipe(file, data);
       if (data.id !== name) fail(file, `id（${data.id}）とフォルダ名（${name}）が一致しません`);
       if (data.category !== cat.id) fail(file, `category（${data.category}）とフォルダ（${cat.id}）が一致しません`);
       const promptDir = path.join(catDir, name, 'prompts');
