@@ -16,7 +16,7 @@
 
 ## 開発
 
-Node.js 22 以上が必要。
+Node.js 22.19.0 以上が必要（依存パッケージの `undici` の要件。`package.json` の `engines` にも記載）。`.node-version` は `22` として、Cloudflare Pages では22系の最新版を使う。
 
 ```sh
 cd site
