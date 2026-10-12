@@ -81,7 +81,12 @@ function readFrontmatter(file: string): { data: Record<string, any>; body: strin
   const src = fs.readFileSync(file, 'utf8');
   const m = src.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
   if (!m) fail(file, 'フロントマターがありません');
-  return { data: (load(m[1]) as Record<string, any>) ?? {}, body: m[2] };
+  const data = (load(m[1]) as Record<string, any>) ?? {};
+  // YAMLの読み込み方によっては、引用符のない日付（2026-10-12）が Date になる。表示と検証のため YYYY-MM-DD に戻す
+  for (const [key, value] of Object.entries(data)) {
+    if (value instanceof Date) data[key] = value.toISOString().slice(0, 10);
+  }
+  return { data, body: m[2] };
 }
 
 export function countChars(text: string): number {
