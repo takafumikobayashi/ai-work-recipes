@@ -39,15 +39,15 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && mq.matches && navIsOpen()) { setNav(false); toggle.focus(); }
 });
 
-/* カテゴリの開閉 */
+/* カテゴリの開閉。見た目（data-open）と読み上げ用の状態（aria-expanded）を必ず一緒に変える */
+function setCatOpen(cat: Element, open: boolean) {
+  cat.setAttribute('data-open', String(open));
+  cat.querySelector('[data-toggle-cat]')?.setAttribute('aria-expanded', String(open));
+}
 document.querySelectorAll<HTMLButtonElement>('[data-toggle-cat]').forEach((btn) => {
-  const li = btn.closest('.nav-cat')!;
-  btn.setAttribute('aria-expanded', li.getAttribute('data-open')!);
-  btn.addEventListener('click', () => {
-    const open = li.getAttribute('data-open') !== 'true';
-    li.setAttribute('data-open', String(open));
-    btn.setAttribute('aria-expanded', String(open));
-  });
+  const cat = btn.closest('.nav-cat')!;
+  setCatOpen(cat, cat.getAttribute('data-open') === 'true');
+  btn.addEventListener('click', () => setCatOpen(cat, cat.getAttribute('data-open') !== 'true'));
 });
 
 /* 検索：メニューのレシピを絞り込む */
@@ -63,7 +63,7 @@ q?.addEventListener('input', () => {
       if (ok) hit = true;
     });
     cat.hidden = words.length > 0 && !hit;
-    if (words.length && hit) cat.setAttribute('data-open', 'true');
+    if (words.length && hit) setCatOpen(cat, true);
   });
 });
 
