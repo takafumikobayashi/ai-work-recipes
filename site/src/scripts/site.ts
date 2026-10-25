@@ -1,5 +1,11 @@
 // サイトの動き：メニューの開閉、カテゴリの開閉、検索、コピー、全文表示、チェックリスト。
-// 利用者の環境で外部に通信しないよう、すべてこのファイルの中で完結させる。
+// 利用者の環境で外部に通信しないよう、すべてこのファイルの中で完結させる（アクセス解析の gtag.js は layouts/Base.astro で読み込む）。
+
+// layouts/Base.astro で GA4 を読み込んだときだけある
+declare global {
+  interface Window { gtag?: (...args: unknown[]) => void }
+}
+export {};
 
 const root = document.documentElement;
 const mq = window.matchMedia('(max-width: 899px)');
@@ -92,6 +98,10 @@ document.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach((btn) => {
       label.textContent = 'コピーしました';
       if (msg) msg.textContent = 'AIの入力欄に貼り付けてください。';
       setTimeout(() => { btn.classList.remove('done'); label.textContent = original; }, 2200);
+      // どのレシピのどのコピーが使われているかを数える（GA4 を読み込んでいるときだけ）。
+      // メニューのボタンは、どのページからでも押せるため、コピー元のレシピのURLを送る
+      const recipe = btn.dataset.fallback ? new URL(btn.dataset.fallback, location.href).pathname : location.pathname;
+      window.gtag?.('event', 'copy_prompt', { recipe_path: decodeURI(recipe), copy_id: id, from_menu: Boolean(btn.dataset.fallback) });
     };
     const fallback = () => {
       // メニューのボタンは本文が見えないため、レシピのページの該当プロンプトを開いて選択する

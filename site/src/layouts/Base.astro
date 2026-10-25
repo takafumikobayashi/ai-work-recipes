@@ -13,10 +13,19 @@ interface Props {
   title?: string;
   description?: string;
   category?: string;
+  /** OGP の og:type。レシピのページは article、それ以外は website */
+  ogType?: 'website' | 'article';
 }
-const { title, description = SITE.description, category } = Astro.props;
+const { title, description = SITE.description, category, ogType = 'website' } = Astro.props;
 const current = Astro.url.pathname;
 const pageTitle = title ? `${title} | ${SITE.name}` : `${SITE.name} β`;
+// OGP の URL は絶対URLにする（基準は astro.config.mjs の site）
+const canonical = new URL(current, Astro.site).href;
+const ogImage = new URL(SITE.ogImage, Astro.site).href;
+// GA4 は本番ビルドで、測定IDがあるときだけ埋め込む。さらに本番のドメインで開いたときだけ読み込む
+const ga = import.meta.env.PROD && SITE.gaMeasurementId
+  ? { gaId: SITE.gaMeasurementId, gaHost: Astro.site!.hostname }
+  : undefined;
 ---
 <!doctype html>
 <html lang="ja">
@@ -27,6 +36,33 @@ const pageTitle = title ? `${title} | ${SITE.name}` : `${SITE.name} β`;
   <meta name="description" content={description}>
   {SITE.noindex && <meta name="robots" content="noindex">}
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="canonical" href={canonical}>
+  <meta property="og:type" content={ogType}>
+  <meta property="og:site_name" content={`${SITE.name} β`}>
+  <meta property="og:locale" content="ja_JP">
+  <meta property="og:title" content={pageTitle}>
+  <meta property="og:description" content={description}>
+  <meta property="og:url" content={canonical}>
+  <meta property="og:image" content={ogImage}>
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content={SITE.ogImageAlt}>
+  <meta name="twitter:card" content="summary_large_image">
+  {ga && (
+    <script is:inline define:vars={ga}>
+      // gtag.js を非同期で読み込む。遮断されている環境でも、サイトの動きには影響しない
+      if (location.hostname === gaHost) {
+        window.dataLayer = window.dataLayer || [];
+        window.gtag = function () { dataLayer.push(arguments); };
+        gtag('js', new Date());
+        gtag('config', gaId);
+        const s = document.createElement('script');
+        s.async = true;
+        s.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(gaId);
+        document.head.appendChild(s);
+      }
+    </script>
+  )}
   <script is:inline>
     // 描画前にPCのメニュー開閉状態を反映して、ちらつきを防ぐ
     try {
