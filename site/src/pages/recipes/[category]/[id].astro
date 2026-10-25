@@ -22,7 +22,7 @@ const requiredSteps = sec.steps.filter((s) => !s.optional).length;
 const feedback = feedbackUrl(r);
 const ai = d.ai_knowledge === '不要' ? 'AIの知識は不要' : `AIの知識：${d.ai_knowledge}`;
 ---
-<Base title={d.title} description={d.summary} category={r.category}>
+<Base title={d.title} description={d.summary} category={r.category} ogType="article">
   <p class="eyebrow">{eyebrow(r)}</p>
   <h1>{d.title}</h1>
   <p class="summary">{d.summary}</p>

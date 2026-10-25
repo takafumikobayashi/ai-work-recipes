@@ -54,7 +54,7 @@ src/
   pages/                   # /、/recipes/<category>/<id>/、/guides/<id>/、404
   styles/site.css          # 色・レイアウト（基準は docs/site-design.md）
   scripts/site.ts          # メニュー開閉、検索、コピー、チェックリスト
-public/                    # favicon
+public/                    # favicon、OGP画像（og.jpg）、robots.txt
 ```
 
 ### page.md の読み方
@@ -81,5 +81,30 @@ GitHubリポジトリと連携し、次のとおり設定する。
 - Node.js のバージョンは `site/.node-version` で指定している
 - 公開前は、プレビューURL（`*.pages.dev`）を Cloudflare Access で制限する
 - 独自ドメインは、Cloudflare Pages の「Custom domains」で `ai-work-recipes.tariki-code.tokyo` を追加し、Netlify DNS に `<project>.pages.dev` 宛ての CNAME レコードを追加する
-- β公開のときに `src/site.config.ts` の `noindex` を `false` にする
+- 検索エンジンに載せるかは `src/site.config.ts` の `noindex` で切り替える（β公開で `false` にした）
+- アクセス解析は、下の「Google Analytics」の手順で `src/site.config.ts` の `gaMeasurementId` を設定する
 - ご意見フォームを作ったら、`src/site.config.ts` の `feedbackUrl` と `feedbackRecipeEntry` を設定する（手順は [docs/feedback-form.md](../docs/feedback-form.md)）
+
+## OGP（SNSなどで共有したときの表示）
+
+すべてのページに、OGP（`og:title`・`og:description`・`og:image` など）と `canonical` を出力する（`src/layouts/Base.astro`）。
+
+- タイトルと説明は、ページの `<title>` と `description` と同じ。レシピのページはフロントマターの `title` と `summary` を使い、`og:type` を `article` にする
+- URLは `astro.config.mjs` の `site` を基準にした絶対URLにする
+- 画像は全ページ共通の `public/og.jpg`（1200×630）。`src/site.config.ts` の `ogImage` と `ogImageAlt` で指定する
+- 画像を差し替えるときは、1200×630 に縮小し、300KB程度までに軽くしてから置く（重い画像は、SNSによっては表示されない）。画像の中の文言を変えたら `ogImageAlt` も合わせる
+
+公開後の表示は、各SNSのツールで確認する（X は投稿画面のプレビュー、Facebook は [シェアデバッガー](https://developers.facebook.com/tools/debug/)）。画像を差し替えたときは、SNS側のキャッシュが残るため、シェアデバッガーで再取得する。
+
+## Google Analytics
+
+GA4 を使う。測定IDを `src/site.config.ts` の `gaMeasurementId` に設定すると、`src/layouts/Base.astro` が gtag.js を読み込む。
+
+1. [Google Analytics](https://analytics.google.com/) で、このサイト用のプロパティを作る（タイムゾーンは日本、通貨は日本円）
+2. ウェブのデータストリームを作り、URLに `https://ai-work-recipes.tariki-code.tokyo` を入れる
+3. 表示された測定ID（`G-XXXXXXXXXX`）を `gaMeasurementId` に設定する
+
+- 読み込むのは、本番ビルド（`npm run build`）を本番のドメイン（`astro.config.mjs` の `site`）で開いたときだけ。開発中、プレビューURL（`*.pages.dev`）、`npm run preview` では計測しない
+- gtag.js は非同期で読み込む。組織のネットワークで遮断されていても、サイトの動きには影響しない（計測されないだけ）
+- コピーボタンを押してコピーできたときに、イベント `copy_prompt` を送る。パラメータは `recipe_path`（レシピのURLのパス）、`copy_id`（コピーした部品のID）、`from_menu`（メニューのコピーボタンからか）。レシピ別に集計するには、GA4 の「管理 → カスタム定義」で `recipe_path` をイベントスコープのカスタムディメンションとして登録する
+- 利用者向けに、Googleアナリティクスを使っていることを `guides/analytics.md`（アクセス解析について）で知らせている。集める情報を変えたら、このページも直す
