@@ -241,8 +241,21 @@ const COPY_ICON =
 
 let panelSeq = 0;
 
-/** コピーボタン付きのプロンプト表示。collapsible は長いプロンプト用（折りたたんで表示） */
-export function panelHtml(opts: { label: string; text: string; id?: string; chars?: boolean; collapsible?: boolean }): string {
+/**
+ * コードブロックの言語ごとの表示名と、コピーしたあとの案内。
+ * 言語の指定がない・text のブロックは、AIに送る定型文として扱う（hint は site.ts の既定の案内）
+ */
+const CODE_KINDS: Record<string, { label: string; hint: string }> = {
+  bash: { label: 'コマンド', hint: 'ターミナルに貼り付けて、Enterキーを押してください。' },
+  sh: { label: 'コマンド', hint: 'ターミナルに貼り付けて、Enterキーを押してください。' },
+  zsh: { label: 'コマンド', hint: 'ターミナルに貼り付けて、Enterキーを押してください。' },
+  powershell: { label: 'PowerShell', hint: 'PowerShellに貼り付けて、Enterキーを押してください。' },
+  bat: { label: 'コマンドプロンプト', hint: 'コマンドプロンプトに貼り付けて、Enterキーを押してください。' },
+  cmd: { label: 'コマンドプロンプト', hint: 'コマンドプロンプトに貼り付けて、Enterキーを押してください。' },
+};
+
+/** コピーボタン付きのプロンプト表示。collapsible は長いプロンプト用（折りたたんで表示）。hint はコピーしたあとの案内 */
+export function panelHtml(opts: { label: string; text: string; id?: string; chars?: boolean; collapsible?: boolean; hint?: string }): string {
   const id = opts.id ?? `copy-${++panelSeq}`;
   const chars = opts.chars ? `<span class="chars">${countChars(opts.text).toLocaleString('ja-JP')}字</span>` : '';
   const expand = opts.collapsible
@@ -252,7 +265,7 @@ export function panelHtml(opts: { label: string; text: string; id?: string; char
 <div class="panel-head"><span class="file"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>${escapeHtml(opts.label)}${chars}</span><button class="copy" type="button" data-copy="${id}">${COPY_ICON}<span>コピー</span></button></div>
 <pre id="${id}">${escapeHtml(opts.text)}</pre>${expand}
 </div>
-<p class="copy-msg" data-msg="${id}" aria-live="polite"></p>`;
+<p class="copy-msg" data-msg="${id}"${opts.hint ? ` data-hint="${escapeHtml(opts.hint)}"` : ''} aria-live="polite"></p>`;
 }
 
 let checklistSeq = 0;
@@ -264,8 +277,9 @@ const marked = new Marked({
     heading({ tokens, depth, text }) {
       return `<h${depth} id="${escapeHtml(headingId(text))}">${this.parser.parseInline(tokens)}</h${depth}>\n`;
     },
-    code({ text }) {
-      return panelHtml({ label: '定型文', text });
+    code({ text, lang }) {
+      const kind = CODE_KINDS[(lang ?? '').trim().toLowerCase()];
+      return panelHtml({ label: kind?.label ?? '定型文', text, hint: kind?.hint });
     },
     table(token) {
       return `<div class="tbl">${defaultRenderer.table.call(this, token)}</div>`;
