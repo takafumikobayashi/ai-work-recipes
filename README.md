@@ -63,8 +63,15 @@ recipes/
     terms-to-checkpoints/        # 利用規約・約款から、確認すべき条項を整理する
   writing/
     notice-from-memo/            # メモからお知らせ文を作る
+    event-copy-from-memo/        # 地域イベントのチラシ・SNS文章を作る
+  design/
+    event-flyer/                 # 地域イベントのチラシ画像を作る
+    illustration/                # 用途に合わせたイラストを作る
   organize/
     classify-comments/           # アンケートや問い合わせを分類して一覧にする
+  coding/
+    browser-game/                # AIと相談しながら、ブラウザーで遊べるゲームを作る
+    website/                     # AIと相談しながら、1ページのWebサイトを作る
 site/                            # Webサイト（Astro）。recipes/ と guides/ から生成する
 ```
 
