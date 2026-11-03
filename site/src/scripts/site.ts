@@ -96,7 +96,7 @@ document.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach((btn) => {
     const ok = () => {
       btn.classList.add('done');
       label.textContent = 'コピーしました';
-      if (msg) msg.textContent = 'AIの入力欄に貼り付けてください。';
+      if (msg) msg.textContent = msg.dataset.hint ?? 'AIの入力欄に貼り付けてください。';
       setTimeout(() => { btn.classList.remove('done'); label.textContent = original; }, 2200);
       // どのレシピのどのコピーが使われているかを数える（GA4 を読み込んでいるときだけ）。
       // メニューのボタンは、どのページからでも押せるため、コピー元のレシピのURLを送る

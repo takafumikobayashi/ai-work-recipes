@@ -115,10 +115,11 @@ WinGet を使っている方は、`winget install Anthropic.ClaudeCode` でも�
 
 ### はじめて起動する（Mac・Windows 共通）
 
-作業したいフォルダに移動してから、`claude` と入力して `Enter` を押します。
+まず、作業したいフォルダに移動します。`cd` と半角の空白を1つ入力したあと、作業したいフォルダをターミナル（PowerShell）のウィンドウにドラッグすると、フォルダの場所が入力されます。そのまま `Enter` を押します。
+
+次に、`claude` と入力して `Enter` を押します。
 
 ```bash
-cd 作業したいフォルダの場所
 claude
 ```
 
