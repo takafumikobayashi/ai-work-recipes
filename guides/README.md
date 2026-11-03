@@ -5,6 +5,7 @@
 | ファイル | サイトでの表示 | メニューの位置 |
 |---|---|---|
 | [start.md](start.md) | はじめての方へ | 上部 |
+| [claude-code-setup.md](claude-code-setup.md) | Claude Code をはじめる（Mac・Windows） | 上部 |
 | [too-long.md](too-long.md) | 長すぎて送れないとき | 困ったとき |
 | [analytics.md](analytics.md) | アクセス解析について | このサイトについて |
 

@@ -16,9 +16,11 @@ export function timeParts(r: Recipe): { main: string; sub?: string } {
   return { main: m[1], sub: m[2] === '目標' ? '目標・未実測' : m[2] };
 }
 
-export function modelStatus(r: Recipe): { label: string; verified: boolean } {
+export function modelStatus(r: Recipe): { label: string; verified: boolean; others: string[] } {
   const status = String(r.data.minimum_model_status);
-  return { label: `${r.data.minimum_model} ${status}`, verified: status === '確認済み' };
+  // 最低動作モデル以外で動作を確認したモデル。最低動作モデルの状態とは別に表示する
+  const others = (r.data.tested_models as string[]).map(String).filter((m) => m !== String(r.data.minimum_model));
+  return { label: `${r.data.minimum_model} ${status}`, verified: status === '確認済み', others };
 }
 
 /** レシピ名を入れた状態で開く、ご意見フォームのURL。フォームが未設定なら undefined */

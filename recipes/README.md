@@ -25,6 +25,11 @@ recipes/
 | reading | [ガイドラインから、やるべきことを整理する](reading/guideline-to-actions/) | Draft |
 | reading | [利用規約・約款から、確認すべき条項を整理する](reading/terms-to-checkpoints/) | Draft |
 | writing | [メモからお知らせ文を作る](writing/notice-from-memo/) | Draft |
+| writing | [地域イベントのチラシ・SNS文章を作る](writing/event-copy-from-memo/) | Draft |
+| design | [地域イベントのチラシ画像を作る](design/event-flyer/) | Draft |
+| design | [用途に合わせたイラストを作る](design/illustration/) | Draft |
+| coding | [AIと相談しながら、ブラウザーで遊べるゲームを作る](coding/browser-game/) | Draft |
+| coding | [AIと相談しながら、1ページのWebサイトを作る](coding/website/) | Draft |
 | organize | [アンケートや問い合わせを分類して一覧にする](organize/classify-comments/) | Draft |
 
 ## 状態
