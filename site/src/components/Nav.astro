@@ -14,6 +14,8 @@ const cats = getCategories()
   .map((c) => ({ ...c, recipes: recipes.filter((r) => r.category === c.id) }))
   .filter((c) => c.recipes.length > 0);
 const start = guides.find((g) => g.id === 'start');
+// 上部には「はじめての方へ」と「すべてのレシピ」の後に、ほかの top のガイドを並べる
+const top = guides.filter((g) => g.data.nav_group === 'top' && g.id !== 'start');
 const help = guides.filter((g) => g.data.nav_group === 'help');
 const about = guides.filter((g) => g.data.nav_group === 'about');
 const anchor = (g: typeof start, heading: string) => (g ? `${g.url}#${encodeURIComponent(headingId(heading))}` : undefined);
@@ -32,6 +34,7 @@ const searchText = (r: (typeof recipes)[number]) =>
   <ul>
     {start && <li><a class="nav-link" href={start.url} {...cur(start.url)}>{start.data.title}</a></li>}
     <li><a class="nav-link" href="/" {...cur('/')}>すべてのレシピ</a></li>
+    {top.map((g) => <li><a class="nav-link" href={g.url} {...cur(g.url)}>{g.data.title}</a></li>)}
   </ul>
 
   <p class="nav-label">業務から探す</p>
